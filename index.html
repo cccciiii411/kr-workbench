@@ -3650,12 +3650,55 @@ window.__KR_AUDIO_BASE__ = 'https://cccciiii411.github.io/kr-workbench/';</scrip
         const e = (text||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
         return '<span class="kr-spk" title="朗读" data-kr="'+e+'" onclick="krSpeak(this.getAttribute(\'data-kr\'))"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3a4.5 4.5 0 0 0-2.5-4v8a4.5 4.5 0 0 0 2.5-4zM14 3.2v2.1a7 7 0 0 1 0 13.4v2.1a9 9 0 0 0 0-17.6z"/></svg></span>';
     }
+    // 发音状态提示条：自然音成功则隐藏；走系统朗读则说明原因，避免"到底听的是啥"的猜测
+    function krAudioStatus(msg) {
+        if(msg){ console.log('[krSpeak]', msg); }
+        try {
+            let el = document.getElementById('kr-audio-status');
+            if(!el){
+                el = document.createElement('div');
+                el.id = 'kr-audio-status';
+                el.style.cssText = 'position:fixed;left:50%;bottom:14px;transform:translateX(-50%);z-index:9999;background:#333;color:#fff;font-size:12px;padding:6px 12px;border-radius:8px;max-width:90vw;box-shadow:0 2px 10px rgba(0,0,0,.3);display:none;';
+                document.body.appendChild(el);
+            }
+            if(msg){ el.textContent = '🔊 ' + msg; el.style.display = 'block'; }
+            else { el.style.display = 'none'; }
+        } catch(e){}
+    }
+    // 系统原生朗读兜底（仅在确实无自然音或自然音加载失败时使用）
+    function krFallbackSpeak(text) {
+        if(!('speechSynthesis' in window)) { hlToast('当前浏览器不支持语音朗读'); return; }
+        const ss = window.speechSynthesis;
+        const sp = (data.krLearn && data.krLearn.speak) || {};
+        const rate = (typeof sp.rate === 'number') ? sp.rate : 0.85;
+        const pitch = (typeof sp.pitch === 'number') ? sp.pitch : 1.05;
+        const doSpeak = () => {
+            const u = new SpeechSynthesisUtterance(text);
+            u.lang = 'ko-KR';
+            u.rate = rate; u.pitch = pitch;   // 可在「🔊 发音」设置条里调
+            let v = _krVoice;
+            if(sp.voiceURI){ const vs = ss.getVoices()||[]; const f = vs.find(x => x.voiceURI === sp.voiceURI); if(f) v = f; }
+            if(v) u.voice = v;
+            ss.speak(u);
+        };
+        // 先取消上一句，再用 setTimeout 错开，避免 cancel 与 speak 竞态导致首播静默
+        try { ss.cancel(); } catch(e){}
+        // 若语音列表尚未就绪，等 voiceschanged 后再播；兜底 300ms 直接用浏览器默认音
+        if(!_krVoice && ss.getVoices().length === 0) {
+            const onReady = () => { _krVoice = krPickVoice(); doSpeak(); ss.removeEventListener('voiceschanged', onReady); };
+            ss.addEventListener('voiceschanged', onReady);
+            setTimeout(() => { if(ss.getVoices().length === 0) doSpeak(); }, 300);
+        } else {
+            setTimeout(doSpeak, 60);
+        }
+    }
     function krSpeak(text) {
         try {
             const _t = (text||'').trim();
             // 优先播放预合成的微软自然音（随站部署的 mp3，音质最佳、零依赖本机语音库）
             const _map = window.__KR_AUDIO__ || {};
-            const _fn = _map[_t] || _map[text];
+            let _fn = _map[_t] || _map[text];
+            if(!_fn && _t){ const nfc = _t.normalize('NFC'); if(nfc !== _t) _fn = _map[nfc]; }  // NFC 归一化兜底，防字节形态不一致漏命中
             if(_fn) {
                 // 基址自适应：本地 file:// 走同目录 audio/（可离线），线上走 GitHub
                 let _base = window.__KR_AUDIO_BASE__ || '';
@@ -3665,36 +3708,15 @@ window.__KR_AUDIO_BASE__ = 'https://cccciiii411.github.io/kr-workbench/';</scrip
                 const _bNoSlash = _base.replace(/\/+$/, '');
                 if(_bNoSlash.endsWith('/audio') && _fn2.indexOf('audio/') === 0) _fn2 = _fn2.slice(6);
                 const _url = _base + _fn2;
-                try {
-                    const _a = new Audio(_url);
-                    _a.play().catch(()=>{});
-                    return;
-                } catch(e){}
+                krAudioStatus('');
+                const _a = new Audio(_url);
+                _a.addEventListener('error', () => { krAudioStatus('自然音加载失败，改用系统朗读 → ' + _url); krFallbackSpeak(text); }, {once:true});
+                const p = _a.play();
+                if(p && p.then){ p.then(()=>krAudioStatus('')).catch(()=>{ krAudioStatus('自然音被浏览器拦截，改用系统朗读 → ' + _url); krFallbackSpeak(text); }); }
+                return;
             }
-            if(!('speechSynthesis' in window)) { hlToast('当前浏览器不支持语音朗读'); return; }
-            const ss = window.speechSynthesis;
-            const sp = (data.krLearn && data.krLearn.speak) || {};
-            const rate = (typeof sp.rate === 'number') ? sp.rate : 0.85;
-            const pitch = (typeof sp.pitch === 'number') ? sp.pitch : 1.05;
-            const doSpeak = () => {
-                const u = new SpeechSynthesisUtterance(text);
-                u.lang = 'ko-KR';
-                u.rate = rate; u.pitch = pitch;   // 可在「🔊 发音」设置条里调
-                let v = _krVoice;
-                if(sp.voiceURI){ const vs = ss.getVoices()||[]; const f = vs.find(x => x.voiceURI === sp.voiceURI); if(f) v = f; }
-                if(v) u.voice = v;
-                ss.speak(u);
-            };
-            // 先取消上一句，再用 setTimeout 错开，避免 cancel 与 speak 竞态导致首播静默
-            try { ss.cancel(); } catch(e){}
-            // 若语音列表尚未就绪，等 voiceschanged 后再播；兜底 300ms 直接用浏览器默认音
-            if(!_krVoice && ss.getVoices().length === 0) {
-                const onReady = () => { _krVoice = krPickVoice(); doSpeak(); ss.removeEventListener('voiceschanged', onReady); };
-                ss.addEventListener('voiceschanged', onReady);
-                setTimeout(() => { if(ss.getVoices().length === 0) doSpeak(); }, 300);
-            } else {
-                setTimeout(doSpeak, 60);
-            }
+            krAudioStatus('该词无预录自然音，使用系统朗读');
+            krFallbackSpeak(text);
         } catch(e) { hlToast('语音朗读不可用'); }
     }
     if('speechSynthesis' in window){
