@@ -3679,6 +3679,7 @@ window.__KR_AUDIO_BASE__ = 'https://cccciiii411.github.io/kr-workbench/';</scrip
             let v = _krVoice;
             if(sp.voiceURI){ const vs = ss.getVoices()||[]; const f = vs.find(x => x.voiceURI === sp.voiceURI); if(f) v = f; }
             if(v) u.voice = v;
+            krAudioStatus(v ? '🔊 系统自然韩语嗓音朗读' : '⚠️ 未找到韩语自然嗓音，使用系统默认音');
             ss.speak(u);
         };
         // 先取消上一句，再用 setTimeout 错开，避免 cancel 与 speak 竞态导致首播静默
@@ -3715,7 +3716,6 @@ window.__KR_AUDIO_BASE__ = 'https://cccciiii411.github.io/kr-workbench/';</scrip
                 if(p && p.then){ p.then(()=>krAudioStatus('')).catch(()=>{ krAudioStatus('自然音被浏览器拦截，改用系统朗读 → ' + _url); krFallbackSpeak(text); }); }
                 return;
             }
-            krAudioStatus('该词无预录自然音，使用系统朗读');
             krFallbackSpeak(text);
         } catch(e) { hlToast('语音朗读不可用'); }
     }
