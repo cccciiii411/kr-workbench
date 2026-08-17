@@ -6773,6 +6773,7 @@ window.__KR_AUDIO_BASE__ = 'https://cccciiii411.github.io/kr-workbench/';</scrip
           }
           const trend = wishTrendHTML(it);
           const hasM = it.mPrice && Number(it.mPrice)>0;
+          const trendClickable = trend ? `<div onclick="event.stopPropagation(); expandDailyTrend(${idx})" style="cursor:pointer;">${trend}<small style="color:#bbb;font-size:9px;display:block;text-align:center;">点击展开 ↗</small></div>` : '';
           const origLine = (it.price && Number(it.price)>0) ? '<br><small style="color:#bbb;font-size:10px;text-decoration:line-through;">原价 ₩'+Number(it.price).toLocaleString()+'</small>' : '';
           const priceHTML = hasM
             ? '<b style="color:var(--neon-pink);font-size:18px;">₩'+Number(it.mPrice).toLocaleString()+'</b><br><small style="color:#999;font-size:11px;font-weight:bold;">💎会员价 ≈ ¥ '+(it.mPrice/RATE).toFixed(1)+'</small>'+origLine
@@ -6783,7 +6784,7 @@ window.__KR_AUDIO_BASE__ = 'https://cccciiii411.github.io/kr-workbench/';</scrip
           let trendRange = '';
           const ph2 = it.priceHistory||[];
           if(ph2.length>1){ trendRange = `<br><small style="color:#bbb;font-size:10px;">📈 ${ph2[0].date} → ${ph2[ph2.length-1].date}</small>`; }
-          list.innerHTML += `<div class="item-card" style="${isPriceDrop(it)?'border-left:4px solid #52C41A;':''}" onclick="openDailyShoppingEdit(${idx})"><div class="del-btn-round" onclick="event.stopPropagation(); deleteDailyShoppingItem(event, ${idx})">✖</div><div class="icon-circle" style="border-radius:15px;overflow:hidden;">${it.img?`<img src="${it.img}">`:'🛍️'}</div><div style="flex:1"><b>${it.name}${lowMark}</b><br><small style="color:#999;font-weight:bold;">${it.cat||'其他'}</small><br><small style="color:#bbb;font-size:10px;">${recDate}</small>${linkBtn}${dropBtn}${trend}${trendRange}</div><div style="text-align:right;">${priceHTML}</div></div>`;
+          list.innerHTML += `<div class="item-card" style="${isPriceDrop(it)?'border-left:4px solid #52C41A;':''}" onclick="openDailyShoppingEdit(${idx})"><div class="del-btn-round" onclick="event.stopPropagation(); deleteDailyShoppingItem(event, ${idx})">✖</div><div class="icon-circle" style="border-radius:15px;overflow:hidden;">${it.img?`<img src="${it.img}">`:'🛍️'}</div><div style="flex:1"><b>${it.name}${lowMark}</b><br><small style="color:#999;font-weight:bold;">${it.cat||'其他'}</small><br><small style="color:#bbb;font-size:10px;">${recDate}</small>${linkBtn}${dropBtn}${trendClickable}${trendRange}</div><div style="text-align:right;">${priceHTML}</div></div>`;
         }
       });
       if(list.innerHTML === '') list.innerHTML = '<div class="empty-state"><div class="empty-state-icon">🛍️</div>还没有购物心愿~</div>';
@@ -6836,7 +6837,7 @@ window.__KR_AUDIO_BASE__ = 'https://cccciiii411.github.io/kr-workbench/';</scrip
     function deleteDailyShoppingItem(ev, idx){
       if(ev) ev.stopPropagation();
       showModal('删除商品?', '确定移除这条购物心愿吗？', false, ok => {
-        if(ok){ store.dailyWish.splice(idx,1); localCommit(); renderDailyShopping(); }
+        if(ok){ store.dailyWish.splice(idx,1); localCommit(); renderDailyShopping(); hlToast('已删除 ✓'); }
       });
     }
 
@@ -6862,10 +6863,35 @@ window.__KR_AUDIO_BASE__ = 'https://cccciiii411.github.io/kr-workbench/';</scrip
           curDailyCat = '全部';
           localCommit();
           renderDailyShopping();
+          hlToast('已删除平台');
         }
       });
     }
 
+    function expandDailyTrend(idx){
+      const it = store.dailyWish[idx];
+      if(!it){ return; }
+      const h = (it.priceHistory||[]).slice();
+      if(h.length < 2){ hlToast('至少需要 2 条价格记录才能查看趋势'); return; }
+      const W=300,H=160,pad=30;
+      const vals=h.map(x=>Number(x.price)||0);
+      const mn=Math.min.apply(null,vals), mx=Math.max.apply(null,vals), rg=(mx-mn)||1;
+      const X=i=>pad+i*(W-2*pad)/(Math.max(1,vals.length-1));
+      const Y=v=>(H-pad)-((v-mn)/rg)*(H-2*pad);
+      const linePts=vals.map((v,i)=>`${X(i).toFixed(1)},${Y(v).toFixed(1)}`).join(' ');
+      const areaPts=`${pad},${(H-pad).toFixed(1)} `+linePts+` ${(W-pad).toFixed(1)},${(H-pad).toFixed(1)}`;
+      const labels=h.map((p,i)=>(i===0||i===h.length-1||i===Math.floor(h.length/2))?`<text x="${X(i).toFixed(1)}" y="${(H-9).toFixed(1)}" font-size="8" fill="#999" text-anchor="middle">${p.date.slice(5)}</text>`:'').join('');
+      const dots=vals.map((v,i)=>`<circle cx="${X(i).toFixed(1)}" cy="${Y(v).toFixed(1)}" r="2.6" fill="#FF007A"/>`).join('');
+      const yMin=`<text x="2" y="${(H-pad).toFixed(1)}" font-size="8" fill="#bbb">₩${mn.toLocaleString()}</text>`;
+      const yMax=`<text x="2" y="${(pad+7).toFixed(1)}" font-size="8" fill="#bbb">₩${mx.toLocaleString()}</text>`;
+      const svg=`<svg width="100%" viewBox="0 0 ${W} ${H}" style="display:block;margin:4px auto 0;">`
+        +`<polygon points="${areaPts}" fill="rgba(255,0,122,0.10)"/>`
+        +`<polyline points="${linePts}" fill="none" stroke="#FF007A" stroke-width="2"/>`
+        +dots+labels+yMin+yMax+`</svg>`;
+      const list=h.slice().reverse().map(p=>`<div style="display:flex;justify-content:space-between;font-size:12px;padding:5px 2px;border-bottom:1px solid #f2f2f2;"><span style="color:#999;">${p.date}</span><b style="color:#FF007A;">₩${Number(p.price).toLocaleString()}</b></div>`).join('');
+      const html=`<div style="text-align:center;font-size:11px;color:#999;margin-bottom:4px;">${it.name} · 价格走势（有效价·会员价优先）</div><div style="max-height:46vh;overflow:auto;">${svg}<div style="margin-top:8px;">${list}</div></div>`;
+      showModal('价格趋势', html, false);
+    }
     async function grabDailyPrice(ev, idx){
       if(ev) ev.stopPropagation();
       const it = store.dailyWish[idx];
