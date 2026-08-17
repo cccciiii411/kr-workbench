@@ -1059,8 +1059,8 @@
         #sm-app .tz-pill-box { display: flex; background: rgba(255,255,255,0.5); border-radius: 20px; padding: 4px; gap: 4px; border: 1.5px solid #F0F0F0; margin-bottom: 10px; }
         #sm-app .tz-pill { flex: 1; padding: 14px; border-radius: 16px; text-align: center; font-size: 12px; font-weight: 900; color: #999; cursor: pointer; transition: 0.3s; }
         #sm-app .tz-pill.active { background: white; color: var(--sailor-blue); box-shadow: 0 5px 12px rgba(0,0,0,0.06); }
-        #sm-app .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); backdrop-filter: blur(8px); display: none; align-items: center; justify-content: center; z-index: 20000; padding: 25px; }
-        #sm-app .modal-card { background: white; width: 100%; max-width: 320px; border-radius: 35px; padding: 30px; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.2); animation: popScale 0.3s; box-sizing: border-box; }
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); backdrop-filter: blur(8px); display: none; align-items: center; justify-content: center; z-index: 20000; padding: 25px; }
+        .modal-card { background: white; width: 100%; max-width: 320px; border-radius: 35px; padding: 30px; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.2); animation: popScale 0.3s; box-sizing: border-box; }
         @keyframes popScale { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
         #sm-app .hidden { display: none !important; }
         #sm-app #v-sub { position: fixed; inset: 0; background: linear-gradient(-45deg, #FFF5F9, #F0F4FF, #EBF0FF, #FFF5F9); background-size: 400% 400%; animation: gradientBG 15s ease infinite; z-index: 1000; padding: 24px; overflow-y: auto; padding-top: env(safe-area-inset-top); padding-bottom: 120px; }
@@ -1861,20 +1861,6 @@ window.__KR_AUDIO_BASE__ = 'https://cccciiii411.github.io/kr-workbench/';</scrip
                     <div style="padding: calc(env(safe-area-inset-top) + 15px) 25px; color: white; font-weight: 900; font-size: 18px; text-align: right; cursor: pointer;" onclick="closeTicketGallery()">DONE ✕</div>
                     <div class="gallery-viewport" id="gallery-viewport"></div>
                     <div style="padding: 30px; text-align: center; color: rgba(255,255,255,0.4); font-size: 12px; font-weight: bold; letter-spacing: 3px;">← 左右滑动浏览 →</div>
-                </div>
-                <div id="custom-modal" class="modal-overlay">
-                    <div class="modal-card">
-                        <h3 id="modal-title" style="margin-top:0; color:var(--brown);">提示</h3>
-                        <div id="modal-msg" style="color:#666; font-size:14px; line-height:1.6; margin-top:10px;"></div>
-                        <div id="modal-sync-options" class="hidden">
-                            <div class="scroll-row" id="sync-pay-sel" style="justify-content:center; margin-top:15px; padding:0;"></div>
-                        </div>
-                        <input type="text" id="modal-inp" class="f-input hidden" style="margin-top:10px;">
-                        <div style="display:flex; gap:10px; margin-top:25px;">
-                            <button class="nav-btn m-btn-cancel" style="flex:1; min-height:50px; border:none; padding:0; background:#EEE;" onclick="closeModal(false)">取消</button>
-                            <button class="nav-btn m-btn-ok nav-pink-bar" style="flex:1; min-height:50px; border:none; padding:0;" onclick="closeModal(true)">确定</button>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
@@ -7043,5 +7029,19 @@ window.__KR_AUDIO_BASE__ = 'https://cccciiii411.github.io/kr-workbench/';</scrip
 
     bootApp();
 </script>
+        <div id="custom-modal" class="modal-overlay">
+        <div class="modal-card">
+        <h3 id="modal-title" style="margin-top:0; color:var(--brown);">提示</h3>
+        <div id="modal-msg" style="color:#666; font-size:14px; line-height:1.6; margin-top:10px;"></div>
+        <div id="modal-sync-options" class="hidden">
+        <div class="scroll-row" id="sync-pay-sel" style="justify-content:center; margin-top:15px; padding:0;"></div>
+        </div>
+        <input type="text" id="modal-inp" class="f-input hidden" style="margin-top:10px;">
+        <div style="display:flex; gap:10px; margin-top:25px;">
+        <button class="nav-btn m-btn-cancel" style="flex:1; min-height:50px; border:none; padding:0; background:#EEE;" onclick="closeModal(false)">取消</button>
+        <button class="nav-btn m-btn-ok nav-pink-bar" style="flex:1; min-height:50px; border:none; padding:0;" onclick="closeModal(true)">确定</button>
+        </div>
+        </div>
+        </div>
 </body>
 </html>
