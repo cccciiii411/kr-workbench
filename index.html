@@ -6550,7 +6550,10 @@ window.__KR_AUDIO_BASE__ = 'https://cccciiii411.github.io/kr-workbench/';</scrip
                         else if(it.cat === 'Musinsa' || urlStr.includes('musinsa')) linkBtn = `<a href="${it.link}" target="_blank" style="background:#000;color:white;padding:6px 10px;border-radius:10px;font-size:10px;font-weight:bold;margin-top:6px;display:inline-block;text-decoration:none;" onclick="event.stopPropagation();">⬛ App直达</a>`;
                         else linkBtn = `<a href="${it.link}" target="_blank" style="background:var(--sailor-blue);color:white;padding:6px 10px;border-radius:10px;font-size:10px;font-weight:bold;margin-top:6px;display:inline-block;text-decoration:none;" onclick="event.stopPropagation();">🔗 商品直达</a>`;
                     }
-                    box.innerHTML += `<div class="item-card" onclick="openEdit('wish', ${idx})"><div class="del-btn-round" onclick="event.stopPropagation(); delItem(event, 'wish', ${idx})">✖</div><div class="icon-circle" style="border-radius:15px;overflow:hidden;">${it.img?`<img src="${it.img}">`:'🛍️'}</div><div style="flex:1"><b>${it.name}</b><br><small style="color:#999;font-weight:bold;">${it.cat}</small><br>${linkBtn}</div><div style="text-align:right;"><b style="color:var(--neon-pink);font-size:18px;">₩${Number(it.price).toLocaleString()}</b><br><small style="color:#999;font-size:11px;font-weight:bold;">≈ ¥ ${(it.price/RATE).toFixed(1)}</small></div></div>`;
+                    const trend = wishTrendHTML(it);
+                    const dropBtn = it.link ? `<button onclick="event.stopPropagation(); grabPrice(event, ${idx})" style="margin-top:6px;background:#FF9F1C;color:#fff;border:none;border-radius:10px;font-size:10px;font-weight:bold;padding:6px 10px;cursor:pointer;">🔄 抓取价</button>` : '';
+                    const lowMark = isPriceDrop(it) ? `<span style="background:#52C41A;color:#fff;font-size:9px;font-weight:bold;padding:2px 6px;border-radius:8px;margin-left:6px;">📉 降价</span>` : '';
+                    box.innerHTML += `<div class="item-card" style="${isPriceDrop(it)?'border-left:4px solid #52C41A;':''}" onclick="openEdit('wish', ${idx})"><div class="del-btn-round" onclick="event.stopPropagation(); delItem(event, 'wish', ${idx})">✖</div><div class="icon-circle" style="border-radius:15px;overflow:hidden;">${it.img?`<img src="${it.img}">`:'🛍️'}</div><div style="flex:1"><b>${it.name}${lowMark}</b><br><small style="color:#999;font-weight:bold;">${it.cat}</small><br>${linkBtn}${dropBtn}${trend}</div><div style="text-align:right;"><b style="color:var(--neon-pink);font-size:18px;">₩${Number(it.price).toLocaleString()}</b><br><small style="color:#999;font-size:11px;font-weight:bold;">≈ ¥ ${(it.price/RATE).toFixed(1)}</small></div></div>`;
                 }
             });
         } else if(curView==='ticket') {
@@ -6596,7 +6599,8 @@ window.__KR_AUDIO_BASE__ = 'https://cccciiii411.github.io/kr-workbench/';</scrip
         } else if(v==='wish') {
             let defCat = it.cat || (store.wishCats.length > 0 ? store.wishCats[0] : '其他');
             if(it.cat && !store.wishCats.includes(it.cat)) store.wishCats.push(it.cat);
-            f.innerHTML = `${lb('平台')}<div class="selector-group" id="c-sel">${store.wishCats.map(c=>`<div class="selector-item ${defCat===c?'active':''}" onclick="selectBtn(this)">${c}</div>`).join('')}</div> <input id="f-name" class="f-input" placeholder="想要买什么？" value="${it.name||''}"> <input id="f-link" class="f-input" placeholder="商品直达 URL" value="${it.link||''}"> <input id="f-price" class="f-input" type="number" placeholder="预算 ₩" value="${it.price||''}" oninput="updateCnyHint(this.value)"><div id="c-hint" style="font-size:12px;color:var(--sailor-purple);margin:-8px 0 15px 5px;font-weight:bold;">≈ ¥ ${(it.price? (it.price/RATE).toFixed(1) : '0.0')}</div>`;
+            const grabBtn = (it.link && it.link.trim()) ? `<button type="button" onclick="grabPrice(event, ${idx})" style="margin:6px 0 10px;background:#FF9F1C;color:#fff;border:none;border-radius:10px;font-size:12px;font-weight:bold;padding:8px 12px;cursor:pointer;">🔄 尝试自动抓取此链接价格</button>` : '';
+            f.innerHTML = `${lb('平台')}<div class="selector-group" id="c-sel">${store.wishCats.map(c=>`<div class="selector-item ${defCat===c?'active':''}" onclick="selectBtn(this)">${c}</div>`).join('')}</div> <input id="f-name" class="f-input" placeholder="想要买什么？" value="${it.name||''}"> <input id="f-link" class="f-input" placeholder="商品直达 URL" value="${it.link||''}"> <input id="f-price" class="f-input" type="number" placeholder="预算 ₩" value="${it.price||''}" oninput="updateCnyHint(this.value)"><div id="c-hint" style="font-size:12px;color:var(--sailor-purple);margin:-8px 0 15px 5px;font-weight:bold;">≈ ¥ ${(it.price? (it.price/RATE).toFixed(1) : '0.0')}</div>${grabBtn}`;
             if(idx>-1) s.innerHTML = `<button class="nav-btn nav-pink-bar" style="width:100%;min-height:55px;border:none!important;margin-top:10px;" onclick="initSyncFlow(${idx})">💸 购入并同步记账</button>`;
         } else if(v==='ticket') {
             f.innerHTML = `<input id="f-name" class="f-input" placeholder="演出名称" value="${it.name||''}"> <input id="f-venue" class="f-input" placeholder="场馆" value="${it.venue||''}"> <div style="display:flex;gap:10px"><input id="f-date" class="f-input" type="date" value="${it.date||'2026-05-01'}"> <input id="f-time" class="f-input" type="time" value="${it.time||'19:00'}"></div> <div style="display:flex;gap:10px"><input id="f-area" class="f-input" placeholder="区" value="${it.area||''}"> <input id="f-row" class="f-input" placeholder="排" value="${it.row||''}"> <input id="f-num" class="f-input" placeholder="号" value="${it.num||''}"></div> <input id="f-link" class="f-input" placeholder="电子详情页 URL" value="${it.link||''}">`;
@@ -6610,7 +6614,15 @@ window.__KR_AUDIO_BASE__ = 'https://cccciiii411.github.io/kr-workbench/';</scrip
         else if(curView==='checklist') { obj.cat = document.querySelector('.selector-item.active')?.innerText || '其他'; if(curIdx>-1) store.checklist[curIdx]=obj; else store.checklist.push(obj); }
         else if(curView==='plan') { let inputDate = getV('f-date'); obj.date = inputDate ? inputDate.substring(5).replace('-', '.') : curDate; curDate = obj.date; if(curIdx>-1) store.plan[curIdx]=obj; else store.plan.push(obj); }
         else if(curView==='fin') { let inputDate = getV('f-date'); obj.date = inputDate ? inputDate.substring(5).replace('-', '.') : curDate; curDate = obj.date; obj.cat=document.querySelector('#f-cat-sel .active')?.innerText||'其他'; obj.pay=document.querySelector('#p-sel .active')?.innerText||'现金'; obj.subPay = (obj.pay === '韩币') ? (document.querySelector('#w-sel .active')?.innerText || '') : ''; if(curIdx > -1 && store.fin[curIdx].subPay && wallet.hasOwnProperty(store.fin[curIdx].subPay)) { wallet[store.fin[curIdx].subPay] += Number(store.fin[curIdx].price); } if(obj.subPay && wallet.hasOwnProperty(obj.subPay)) { wallet[obj.subPay] -= Number(obj.price); } if(curIdx>-1) store.fin[curIdx]=obj; else store.fin.push(obj); }
-        else if(curView==='wish') { obj.cat=document.querySelector('#c-sel .active')?.innerText||'其他'; if(curIdx>-1) store.wish[curIdx]=obj; else store.wish.push(obj); }
+        else if(curView==='wish') {
+            obj.cat=document.querySelector('#c-sel .active')?.innerText||'其他';
+            const oldW = curIdx>-1 ? store.wish[curIdx] : null;
+            obj.priceHistory = (oldW && oldW.priceHistory) ? oldW.priceHistory.slice() : [];
+            const np = Number(obj.price)||0;
+            const lastH = obj.priceHistory[obj.priceHistory.length-1];
+            if(!lastH || lastH.price !== np) obj.priceHistory.push({date: new Date().toISOString().slice(0,10), price: np});
+            if(curIdx>-1) store.wish[curIdx]=obj; else store.wish.push(obj);
+        }
         else if(curView==='ticket') { if(curIdx>-1) store.ticket[curIdx]=obj; else store.ticket.push(obj); store.ticket.sort((a,b) => (a.date||'9999-99-99').localeCompare(b.date||'9999-99-99')); }
         localCommit(); closeDrawer(); initUI(); if(curView!=='home') renderList();
     }
@@ -6627,14 +6639,56 @@ window.__KR_AUDIO_BASE__ = 'https://cccciiii411.github.io/kr-workbench/';</scrip
                 if(curView === 'ticket' || curView === 'plan' || curView === 'checklist') { document.getElementById('upload-zone').classList.remove('scanning'); return; }
                 try {
                     const res = await Tesseract.recognize(tempImg, 'eng+kor');
-                    const pr = (res.data.text.match(/[0-9]{1,3}(?:,[0-9]{3})+/g) || [res.data.text.match(/\d{4,}/g)])[0]?.toString().replace(/,/g,'') || "";
+                    const txt = res.data.text || '';
+                    let pr = '';
+                    const m1 = txt.match(/(?:₩|￦)\s?([0-9]{1,3}(?:,[0-9]{3})+|[0-9]{4,})/);
+                    const m2 = txt.match(/([0-9]{1,3}(?:,[0-9]{3})+|[0-9]{4,})\s?원/);
+                    if(m1) pr = m1[1].replace(/,/g,''); else if(m2) pr = m2[1].replace(/,/g,'');
                     if(document.getElementById('f-price')) { document.getElementById('f-price').value = pr; updateCnyHint(pr); }
-                    const name = res.data.text.split('\n').filter(l => l.trim().length > 3).sort((a,b)=>b.length-a.length)[0];
-                    if(document.getElementById('f-name')) document.getElementById('f-name').value = name || "";
+                    const olines = txt.split(String.fromCharCode(10)).map(function(l){return l.trim();}).filter(function(l){return l && !/₩|원|^\d+$/.test(l);});
+                    const name = olines.sort(function(a,b){return b.length-a.length;})[0] || '';
+                    if(document.getElementById('f-name')) document.getElementById('f-name').value = name;
                     document.getElementById('upload-zone').classList.remove('scanning');
                 } catch (err) { document.getElementById('upload-zone').classList.remove('scanning'); }
             }; img.src = e.target.result;
         }; r.readAsDataURL(input.files[0]);
+    }
+
+    /* 价格监控辅助 */
+    function wishTrendHTML(it){
+      const h = it.priceHistory || [];
+      if(h.length < 2) return '';
+      const cur = Number(it.price)||0, prev = h[h.length-2].price;
+      const diff = cur - prev, pct = prev ? (diff/prev*100) : 0, up = diff > 0;
+      const color = up ? '#FF4D4F' : '#52C41A', arrow = up ? '▲' : '▼', label = up ? '涨' : '降';
+      const vals = h.map(x=>x.price), mn=Math.min.apply(null,vals), mx=Math.max.apply(null,vals), rg=(mx-mn)||1;
+      const pts = vals.map((v,i)=>`${(i/(vals.length-1)*56).toFixed(1)},${(18-(v-mn)/rg*16).toFixed(1)}`).join(' ');
+      const spark = `<svg width="56" height="18" style="vertical-align:middle;"><polyline points="${pts}" fill="none" stroke="${color}" stroke-width="1.5"/></svg>`;
+      return `<div style="font-size:10px;font-weight:bold;color:${color};margin-top:3px;">${arrow} ${label} ₩${Math.abs(diff).toLocaleString()} (${pct.toFixed(1)}%) ${spark}</div>`;
+    }
+    function isPriceDrop(it){ const h=it.priceHistory||[]; if(h.length<2) return false; const cur=Number(it.price)||0; return cur < h[h.length-2].price; }
+    async function grabPrice(ev, idx){
+      const it = store.wish[idx]; if(!it || !it.link){ hlToast('该商品没有填写商品链接'); return; }
+      const btn = ev && ev.target; if(btn){ btn.innerText='抓取中…'; btn.disabled=true; }
+      const p = await fetchPriceFromLink(it.link);
+      if(btn){ btn.disabled=false; btn.innerText='🔄 抓取价'; }
+      if(p){ const inp=document.getElementById('f-price'); if(inp){ inp.value=p; updateCnyHint(p); } store.wish[idx].price = p; const ph=store.wish[idx].priceHistory||[]; const last=ph[ph.length-1]; if(!last||last.price!==p) ph.push({date:new Date().toISOString().slice(0,10),price:p}); store.wish[idx].priceHistory=ph; localCommit(); renderList(); hlToast('已抓取价格 ₩'+Number(p).toLocaleString()); }
+      else { hlToast('自动抓取失败，请手动填入价格（可能网站反爬或需登录）'); }
+    }
+    async function fetchPriceFromLink(url){
+      if(!url) return null;
+      const proxies = ['https://api.allorigins.win/raw?url=', 'https://corsproxy.io/?'];
+      for(let pi=0; pi<proxies.length; pi++){
+        const base = proxies[pi];
+        try{
+          const ctrl = new AbortController(); const t = setTimeout(function(){ ctrl.abort(); }, 8000);
+          const r = await fetch(base + encodeURIComponent(url), {signal: ctrl.signal}); clearTimeout(t);
+          const txt = await r.text();
+          const m = txt.match(/(?:₩|￦)\s?([0-9]{1,3}(?:,[0-9]{3})+|[0-9]{4,})/) || txt.match(/([0-9]{1,3}(?:,[0-9]{3})+|[0-9]{4,})\s?원/);
+          if(m) return Number(m[1].replace(/,/g,''));
+        }catch(e){}
+      }
+      return null;
     }
 
     let pSyncIdx = -1;
