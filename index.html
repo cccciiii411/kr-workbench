@@ -1493,11 +1493,12 @@
 
 
         /* ============ 日常·购物清单 视觉（复用 Seoul Moon 卡片体系） ============ */
-        #view-daily-shopping .item-card { background: rgba(255,255,255,0.65); backdrop-filter: blur(12px); border: 1.5px solid rgba(255,255,255,0.8); padding: 14px; border-radius: 24px; display: flex; flex-direction: column; align-items: stretch; gap: 0; margin-bottom: 0; position: relative; box-shadow: 0 8px 25px rgba(0,0,0,0.03); animation: bounceIn 0.5s; }
+        #view-daily-shopping .item-card { background: rgba(255,255,255,0.72); backdrop-filter: blur(12px); border: 1.5px solid rgba(255,255,255,0.85); padding: 16px; border-radius: 28px; display: flex; flex-direction: column; align-items: stretch; gap: 0; margin-bottom: 0; position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.05); animation: bounceIn 0.5s; transition: transform .2s, box-shadow .2s; }
+        #view-daily-shopping .item-card:hover { transform: translateY(-4px); box-shadow: 0 16px 40px rgba(0,0,0,0.10); }
         #view-daily-shopping .icon-circle { width: 55px; height: 55px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: white; flex-shrink: 0; font-size: 24px; border: 1.5px solid #F0F0F0; overflow: hidden; position: relative; }
         #view-daily-shopping .icon-circle img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; border-radius: inherit; }
-        #view-daily-shopping #daily-wish-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 16px; }
-        #view-daily-shopping .card-thumb { width: 100%; height: 148px; border-radius: 18px; background: #fff; display: flex; align-items: center; justify-content: center; font-size: 46px; overflow: hidden; margin-bottom: 10px; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.05); }
+        #view-daily-shopping #daily-wish-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 20px; }
+        #view-daily-shopping .card-thumb { width: 100%; height: 195px; border-radius: 22px; background: linear-gradient(135deg,#fff,#fdf2f8); display: flex; align-items: center; justify-content: center; font-size: 64px; overflow: hidden; margin-bottom: 12px; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.05); }
         #view-daily-shopping .card-thumb img { width: 100%; height: 100%; object-fit: cover; }
         #view-daily-shopping .card-body { width: 100%; display: flex; flex-direction: column; gap: 3px; }
         #view-daily-shopping .card-title-row { font-size: 15px; line-height: 1.25; word-break: break-word; }
