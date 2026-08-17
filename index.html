@@ -6742,9 +6742,14 @@ window.__KR_AUDIO_BASE__ = 'https://cccciiii411.github.io/kr-workbench/';</scrip
       const catRow = document.getElementById('daily-wish-cat-row');
       const list = document.getElementById('daily-wish-list');
       if(!catRow || !list) return;
+      const usedCats = new Set((store.dailyWish||[]).map(it => it.cat || '其他'));
+      // 按原顺序保留有记录或默认必须存在的分类
+      const visibleCats = (store.dailyWishCats||[]).map((c, i) => ({c, i, count: (store.dailyWish||[]).filter(it => (it.cat || '其他') === c).length})).filter(x => x.count > 0);
+      // 如果当前选中的分类没有记录，切回全部
+      if(curDailyCat !== '全部' && !visibleCats.some(x => x.c === curDailyCat)){ curDailyCat = '全部'; }
       let catHTML = `<div class="chk-cat-btn ${curDailyCat==='全部'?'active':''}" onclick="curDailyCat='全部';renderDailyShopping()">全部</div>`;
-      (store.dailyWishCats||[]).forEach((c, i) => {
-        catHTML += `<div class="chk-cat-btn ${curDailyCat===c?'active':''}" onclick="curDailyCat='${c}';renderDailyShopping()">${c} ${curDailyCat===c && c!=='其他'?`<span class="chk-cat-del" style="top:-6px;right:-6px;background:#FF4D4F;color:white;border:1px solid white;" onclick="event.stopPropagation(); delDailyWishCat(${i})">✖</span>`:''}</div>`;
+      visibleCats.forEach(({c, i, count}) => {
+        catHTML += `<div class="chk-cat-btn ${curDailyCat===c?'active':''}" onclick="curDailyCat='${c}';renderDailyShopping()">${c}<small style="margin-left:4px;opacity:0.7;font-size:9px;">${count}</small>${curDailyCat===c && c!=='其他'?`<span class="chk-cat-del" style="top:-6px;right:-6px;background:#FF4D4F;color:white;border:1px solid white;" onclick="event.stopPropagation(); delDailyWishCat(${i})">✖</span>`:''}</div>`;
       });
       catHTML += `<div class="chk-cat-btn" style="border:1.5px dashed var(--sailor-purple); background:transparent;" onclick="addDailyWishCat()">+ 新建</div>`;
       catRow.innerHTML = catHTML;
