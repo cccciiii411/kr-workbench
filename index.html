@@ -1566,6 +1566,10 @@ window.__KR_AUDIO_BASE__ = 'https://cccciiii411.github.io/kr-workbench/';</scrip
                     <span class="nav-item-icon">⚖️</span>
                     <span>身体管理</span>
                 </div>
+                <div class="nav-item" data-view="daily-shopping" onclick="switchView('daily-shopping', this)">
+                    <span class="nav-item-icon">🛍️</span>
+                    <span>购物清单</span>
+                </div>
             </div>
         </nav>
 
@@ -1696,6 +1700,26 @@ window.__KR_AUDIO_BASE__ = 'https://cccciiii411.github.io/kr-workbench/';</scrip
                         <button class="add-btn" style="width:100%; margin-top:8px;" onclick="addEvent()">+ 添加日程</button>
                     </div>
                     <div id="event-list"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="view" id="view-daily-shopping">
+            <div class="glass-card" style="min-height:calc(100vh - 140px); padding-bottom:90px;">
+                <div class="card-title">🛍️ 购物清单</div>
+                <div id="daily-wish-cat-row" class="chk-cats scroll-row" style="margin-bottom:12px;"></div>
+                <div id="daily-wish-list"></div>
+                <button class="nav-btn nav-pink-bar" style="position:fixed; bottom:30px; left:24px; width:calc(100% - 48px); padding:18px; border-radius:45px; z-index:1001;" onclick="openDailyShoppingEdit(-1)">＋ 新增商品 ✨</button>
+            </div>
+            <div id="daily-shopping-drawer" class="drawer" onclick="closeDailyShoppingDrawer()">
+                <div class="drawer-content" onclick="event.stopPropagation()">
+                    <div id="daily-upload-zone" class="pre-box" onclick="pop(); document.getElementById('daily-file-in').click()">
+                        <div class="scan-line"></div>
+                        <div id="daily-preview-text">📸<br><small style="font-weight:900">拍照识图 / 添加封图</small></div>
+                        <input type="file" id="daily-file-in" class="hidden" accept="image/*" onchange="handleDailySmartUpload(this)">
+                    </div>
+                    <div id="daily-d-form"></div>
+                    <button class="nav-btn nav-pink-bar" style="width:100%; border-radius:45px; margin-top:20px;" onclick="saveDailyShopping()">确认并保存 ✨</button>
                 </div>
             </div>
         </div>
@@ -2700,6 +2724,7 @@ window.__KR_AUDIO_BASE__ = 'https://cccciiii411.github.io/kr-workbench/';</scrip
         'daily-memo': '随手记',
         'daily-korean': '한국어 학습 📖',
         'daily-health': '身体管理 ⚖️',
+        'daily-shopping': '购物清单 🛍️',
     };
 
     function switchView(viewId, el) {
@@ -2727,6 +2752,7 @@ window.__KR_AUDIO_BASE__ = 'https://cccciiii411.github.io/kr-workbench/';</scrip
         if (viewId === 'daily-memo') renderDailyMemos();
         if (viewId === 'daily-korean') renderKrLearn();
         if (viewId === 'daily-health') renderHealth();
+        if (viewId === 'daily-shopping') renderDailyShopping();
     }
 
     function toggleSidebar() {
@@ -6353,7 +6379,7 @@ window.__KR_AUDIO_BASE__ = 'https://cccciiii411.github.io/kr-workbench/';</scrip
     /* SM 数据引擎 */
     const DB_NAME = 'SeoulMoon_Final_V18', SM_STORE_NAME = 'appData', DATA_KEY = 'core_data';
     let wallet = { Toss: 0, Namane: 0, TripPass: 0 };
-    let flights = [], store = { plan: [], ticket: [], wish: [], fin: [], checklist: [], chkCats: ['行李🧳', '购物🛍️', '办事📌'], wishCats: ['Olive Young', 'Musinsa', '药局', '其他'], memos: [], quickNote: '', customDays: [], removedDays: [] };
+    let flights = [], store = { plan: [], ticket: [], wish: [], fin: [], checklist: [], chkCats: ['行李🧳', '购物🛍️', '办事📌'], wishCats: ['Olive Young', 'Musinsa', '药局', '其他'], dailyWish: [], dailyWishCats: ['Olive Young', 'Musinsa', '药局', '其他'], memos: [], quickNote: '', customDays: [], removedDays: [] };
     let curView = 'home', curIdx = -1, curDate = '04.29', RATE = 191.0, modalCallback = null, tempImg = '', dTz='上海', aTz='首尔', sTz='首尔', curCat='全部', activeChkCat='全部';
 
     const dbPromise = new Promise(resolve => { const req = indexedDB.open(DB_NAME, 1); req.onupgradeneeded = e => e.target.result.createObjectStore(SM_STORE_NAME); req.onsuccess = () => resolve(req.result); req.onerror = () => resolve(null); });
@@ -6370,6 +6396,8 @@ window.__KR_AUDIO_BASE__ = 'https://cccciiii411.github.io/kr-workbench/';</scrip
                     store.plan = s.plan || []; store.ticket = s.ticket || []; store.wish = s.wish || []; store.fin = s.fin || [];
                     store.checklist = s.checklist || []; store.chkCats = s.chkCats || ['行李🧳', '购物🛍️', '办事📌'];
                     store.wishCats = s.wishCats || ['Olive Young', 'Musinsa', '药局', '其他'];
+                    store.dailyWish = s.dailyWish || [];
+                    store.dailyWishCats = s.dailyWishCats || ['Olive Young', 'Musinsa', '药局', '其他'];
                     store.memos = s.memos || []; store.quickNote = s.quickNote || '';
                     store.customDays = s.customDays || [];
                     store.removedDays = s.removedDays || [];
@@ -6689,6 +6717,169 @@ window.__KR_AUDIO_BASE__ = 'https://cccciiii411.github.io/kr-workbench/';</scrip
         }catch(e){}
       }
       return null;
+    }
+
+
+    /* ========== 日常-独立购物清单 ========== */
+    let curDailyCat = '全部';
+    let dailyEditIdx = -1;
+    let dailyTempImg = '';
+
+    function renderDailyShopping(){
+      const catRow = document.getElementById('daily-wish-cat-row');
+      const list = document.getElementById('daily-wish-list');
+      if(!catRow || !list) return;
+      let catHTML = `<div class="chk-cat-btn ${curDailyCat==='全部'?'active':''}" onclick="curDailyCat='全部';renderDailyShopping()">全部</div>`;
+      (store.dailyWishCats||[]).forEach((c, i) => {
+        catHTML += `<div class="chk-cat-btn ${curDailyCat===c?'active':''}" onclick="curDailyCat='${c}';renderDailyShopping()">${c} ${curDailyCat===c && c!=='其他'?`<span class="chk-cat-del" style="top:-6px;right:-6px;background:#FF4D4F;color:white;border:1px solid white;" onclick="event.stopPropagation(); delDailyWishCat(${i})">✖</span>`:''}</div>`;
+      });
+      catHTML += `<div class="chk-cat-btn" style="border:1.5px dashed var(--sailor-purple); background:transparent;" onclick="addDailyWishCat()">+ 新建</div>`;
+      catRow.innerHTML = catHTML;
+      list.innerHTML = '';
+      (store.dailyWish||[]).forEach((it, idx) => {
+        if(curDailyCat==='全部' || it.cat===curDailyCat){
+          let linkBtn = '';
+          if(it.link && it.link.trim() !== ''){
+            const urlStr = it.link.toLowerCase();
+            if(it.cat==='Olive Young' || urlStr.includes('oliveyoung')) linkBtn = `<a href="${it.link}" target="_blank" style="background:#A3C644;color:white;padding:6px 10px;border-radius:10px;font-size:10px;font-weight:bold;margin-top:6px;display:inline-block;text-decoration:none;" onclick="event.stopPropagation();">🌿 官网直达</a>`;
+            else if(it.cat==='Musinsa' || urlStr.includes('musinsa')) linkBtn = `<a href="${it.link}" target="_blank" style="background:#000;color:white;padding:6px 10px;border-radius:10px;font-size:10px;font-weight:bold;margin-top:6px;display:inline-block;text-decoration:none;" onclick="event.stopPropagation();">⬛ App直达</a>`;
+            else linkBtn = `<a href="${it.link}" target="_blank" style="background:var(--sailor-blue);color:white;padding:6px 10px;border-radius:10px;font-size:10px;font-weight:bold;margin-top:6px;display:inline-block;text-decoration:none;" onclick="event.stopPropagation();">🔗 商品直达</a>`;
+          }
+          const trend = wishTrendHTML(it);
+          const dropBtn = it.link ? `<button onclick="event.stopPropagation(); grabDailyPrice(event, ${idx})" style="margin-top:6px;background:#FF9F1C;color:#fff;border:none;border-radius:10px;font-size:10px;font-weight:bold;padding:6px 10px;cursor:pointer;">🔄 抓取价</button>` : '';
+          const lowMark = isPriceDrop(it) ? `<span style="background:#52C41A;color:#fff;font-size:9px;font-weight:bold;padding:2px 6px;border-radius:8px;margin-left:6px;">📉 降价</span>` : '';
+          list.innerHTML += `<div class="item-card" style="${isPriceDrop(it)?'border-left:4px solid #52C41A;':''}" onclick="openDailyShoppingEdit(${idx})"><div class="del-btn-round" onclick="event.stopPropagation(); deleteDailyShoppingItem(event, ${idx})">✖</div><div class="icon-circle" style="border-radius:15px;overflow:hidden;">${it.img?`<img src="${it.img}">`:'🛍️'}</div><div style="flex:1"><b>${it.name}${lowMark}</b><br><small style="color:#999;font-weight:bold;">${it.cat||'其他'}</small><br>${linkBtn}${dropBtn}${trend}</div><div style="text-align:right;"><b style="color:var(--neon-pink);font-size:18px;">₩${Number(it.price).toLocaleString()}</b><br><small style="color:#999;font-size:11px;font-weight:bold;">≈ ¥ ${(it.price/RATE).toFixed(1)}</small></div></div>`;
+        }
+      });
+      if(list.innerHTML === '') list.innerHTML = '<div class="empty-state"><div class="empty-state-icon">🛍️</div>还没有购物心愿~</div>';
+    }
+
+    function updateDailyCnyHint(v){ const el=document.getElementById('daily-c-hint'); if(el) el.innerText='≈ ¥ '+(Number(v)/RATE).toFixed(1); }
+
+    function openDailyShoppingEdit(idx){
+      dailyEditIdx = idx;
+      dailyTempImg = (idx>-1 && store.dailyWish[idx] && store.dailyWish[idx].img) ? store.dailyWish[idx].img : '';
+      const it = (idx>-1 && store.dailyWish[idx]) ? store.dailyWish[idx] : {};
+      const defCat = it.cat || ((store.dailyWishCats && store.dailyWishCats.length>0) ? store.dailyWishCats[0] : '其他');
+      if(it.cat && store.dailyWishCats && !store.dailyWishCats.includes(it.cat)) store.dailyWishCats.push(it.cat);
+      const grabBtn = (it.link && it.link.trim()) ? `<button type="button" onclick="grabDailyPrice(event, ${idx})" style="margin:6px 0 10px;background:#FF9F1C;color:#fff;border:none;border-radius:10px;font-size:12px;font-weight:bold;padding:8px 12px;cursor:pointer;">🔄 尝试自动抓取此链接价格</button>` : '';
+      const form = document.getElementById('daily-d-form');
+      form.innerHTML = `${lb('平台')}<div class="selector-group" id="daily-c-sel">${(store.dailyWishCats||[]).map(c=>`<div class="selector-item ${defCat===c?'active':''}" onclick="selectBtn(this)">${c}</div>`).join('')}</div> <input id="daily-f-name" class="f-input" placeholder="想要买什么？" value="${it.name||''}"> <input id="daily-f-link" class="f-input" placeholder="商品直达 URL" value="${it.link||''}"> <input id="daily-f-price" class="f-input" type="number" placeholder="预算 ₩" value="${it.price||''}" oninput="updateDailyCnyHint(this.value)"><div id="daily-c-hint" style="font-size:12px;color:var(--sailor-purple);margin:-8px 0 15px 5px;font-weight:bold;">≈ ¥ ${(it.price? (it.price/RATE).toFixed(1) : '0.0')}</div>${grabBtn}`;
+      const ptext = document.getElementById('daily-preview-text');
+      if(ptext) ptext.innerHTML = dailyTempImg ? `<img src="${dailyTempImg}">` : `📸<br><small style="font-weight:900">拍照识图 / 添加封图</small>`;
+      document.getElementById('daily-shopping-drawer').classList.add('active');
+    }
+
+    function closeDailyShoppingDrawer(){ document.getElementById('daily-shopping-drawer').classList.remove('active'); dailyEditIdx=-1; dailyTempImg=''; }
+
+    function getDailyV(id){ const el=document.getElementById(id); return el?el.value:''; }
+
+    function saveDailyShopping(){
+      const name = getDailyV('daily-f-name');
+      if(!name || !name.trim()){ hlToast('请输入商品名称'); return; }
+      const oldW = (dailyEditIdx>-1 && store.dailyWish[dailyEditIdx]) ? store.dailyWish[dailyEditIdx] : null;
+      const obj = {
+        name: name,
+        link: getDailyV('daily-f-link'),
+        price: getDailyV('daily-f-price'),
+        img: dailyTempImg || (oldW?oldW.img:''),
+        cat: document.querySelector('#daily-c-sel .active')?.innerText || '其他'
+      };
+      obj.priceHistory = (oldW && oldW.priceHistory) ? oldW.priceHistory.slice() : [];
+      const np = Number(obj.price)||0;
+      const lastH = obj.priceHistory[obj.priceHistory.length-1];
+      if(!lastH || lastH.price !== np) obj.priceHistory.push({date: new Date().toISOString().slice(0,10), price: np});
+      if(dailyEditIdx>-1) store.dailyWish[dailyEditIdx]=obj; else store.dailyWish.push(obj);
+      localCommit();
+      closeDailyShoppingDrawer();
+      renderDailyShopping();
+      hlToast('已保存');
+    }
+
+    function deleteDailyShoppingItem(ev, idx){
+      if(ev) ev.stopPropagation();
+      showModal('删除商品?', '确定移除这条购物心愿吗？', false, ok => {
+        if(ok){ store.dailyWish.splice(idx,1); localCommit(); renderDailyShopping(); }
+      });
+    }
+
+    function addDailyWishCat(){
+      showModal('新建购物平台', '名称:', true, (ok, val) => {
+        val = val.trim();
+        if(ok && val && store.dailyWishCats && !store.dailyWishCats.includes(val)){
+          store.dailyWishCats.push(val);
+          curDailyCat = val;
+          localCommit();
+          renderDailyShopping();
+        }
+      });
+    }
+
+    function delDailyWishCat(idx){
+      const name = store.dailyWishCats[idx];
+      showModal('删除平台?', `[${name}] 的商品将归为"其他"中。`, false, ok => {
+        if(ok){
+          store.dailyWishCats.splice(idx,1);
+          if(!store.dailyWishCats.includes('其他')) store.dailyWishCats.push('其他');
+          store.dailyWish.forEach(it => { if(it.cat === name) it.cat = '其他'; });
+          curDailyCat = '全部';
+          localCommit();
+          renderDailyShopping();
+        }
+      });
+    }
+
+    async function grabDailyPrice(ev, idx){
+      if(ev) ev.stopPropagation();
+      const it = store.dailyWish[idx];
+      if(!it || !it.link){ hlToast('该商品没有填写商品链接'); return; }
+      const btn = ev && ev.target;
+      if(btn){ btn.innerText='抓取中…'; btn.disabled=true; }
+      const p = await fetchPriceFromLink(it.link);
+      if(btn){ btn.disabled=false; btn.innerText='🔄 抓取价'; }
+      if(p){
+        const inp=document.getElementById('daily-f-price');
+        if(inp){ inp.value=p; updateDailyCnyHint(p); }
+        store.dailyWish[idx].price = p;
+        const ph=store.dailyWish[idx].priceHistory||[];
+        const last=ph[ph.length-1];
+        if(!last||last.price!==p) ph.push({date:new Date().toISOString().slice(0,10),price:p});
+        store.dailyWish[idx].priceHistory=ph;
+        localCommit();
+        renderDailyShopping();
+        hlToast('已抓取价格 ₩'+Number(p).toLocaleString());
+      } else {
+        hlToast('自动抓取失败，请手动填入价格（可能网站反爬或需登录）');
+      }
+    }
+
+    function handleDailySmartUpload(input){
+      const zone = document.getElementById('daily-upload-zone');
+      if(!input.files || !input.files[0]) return;
+      zone.classList.add('scanning');
+      const r = new FileReader();
+      r.onload = function(e){
+        dailyTempImg = e.target.result;
+        const img = new Image();
+        img.onload = async function(){
+          document.getElementById('daily-preview-text').innerHTML = `<img src="${dailyTempImg}">`;
+          try {
+            const res = await Tesseract.recognize(dailyTempImg, 'eng+kor');
+            const txt = res.data.text || '';
+            const m1 = txt.match(/(?:₩|￦)\s?([0-9]{1,3}(?:,[0-9]{3})+|[0-9]{4,})/);
+            const m2 = txt.match(/([0-9]{1,3}(?:,[0-9]{3})+|[0-9]{4,})\s?원/);
+            let pr = '';
+            if(m1) pr = m1[1].replace(/,/g,''); else if(m2) pr = m2[1].replace(/,/g,'');
+            if(document.getElementById('daily-f-price')){ document.getElementById('daily-f-price').value = pr; updateDailyCnyHint(pr); }
+            const olines = txt.split(String.fromCharCode(10)).map(l=>l.trim()).filter(l=>l && !/₩|원|^\d+$/.test(l));
+            const name = olines.sort((a,b)=>b.length-a.length)[0] || '';
+            if(document.getElementById('daily-f-name')) document.getElementById('daily-f-name').value = name;
+          } catch(err){}
+          zone.classList.remove('scanning');
+        };
+        img.src = dailyTempImg;
+      };
+      r.readAsDataURL(input.files[0]);
     }
 
     let pSyncIdx = -1;
