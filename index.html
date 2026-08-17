@@ -6773,12 +6773,17 @@ window.__KR_AUDIO_BASE__ = 'https://cccciiii411.github.io/kr-workbench/';</scrip
           }
           const trend = wishTrendHTML(it);
           const hasM = it.mPrice && Number(it.mPrice)>0;
+          const origLine = (it.price && Number(it.price)>0) ? '<br><small style="color:#bbb;font-size:10px;text-decoration:line-through;">原价 ₩'+Number(it.price).toLocaleString()+'</small>' : '';
           const priceHTML = hasM
-            ? '<b style="color:var(--neon-pink);font-size:18px;">₩'+Number(it.mPrice).toLocaleString()+'</b><br><small style="color:#999;font-size:11px;font-weight:bold;">💎会员价 ≈ ¥ '+(it.mPrice/RATE).toFixed(1)+'</small><br><small style="color:#bbb;font-size:10px;text-decoration:line-through;">原价 ₩'+Number(it.price||0).toLocaleString()+'</small>'
+            ? '<b style="color:var(--neon-pink);font-size:18px;">₩'+Number(it.mPrice).toLocaleString()+'</b><br><small style="color:#999;font-size:11px;font-weight:bold;">💎会员价 ≈ ¥ '+(it.mPrice/RATE).toFixed(1)+'</small>'+origLine
             : '<b style="color:var(--neon-pink);font-size:18px;">₩'+Number(it.price||0).toLocaleString()+'</b><br><small style="color:#999;font-size:11px;font-weight:bold;">≈ ¥ '+((it.price||0)/RATE).toFixed(1)+'</small>';
           const dropBtn = it.link ? `<button onclick="event.stopPropagation(); grabDailyPrice(event, ${idx})" style="margin-top:6px;background:#FF9F1C;color:#fff;border:none;border-radius:10px;font-size:10px;font-weight:bold;padding:6px 10px;cursor:pointer;">🔄 抓取价</button>` : '';
           const lowMark = isPriceDrop(it) ? `<span style="background:#52C41A;color:#fff;font-size:9px;font-weight:bold;padding:2px 6px;border-radius:8px;margin-left:6px;">📉 降价</span>` : '';
-          list.innerHTML += `<div class="item-card" style="${isPriceDrop(it)?'border-left:4px solid #52C41A;':''}" onclick="openDailyShoppingEdit(${idx})"><div class="del-btn-round" onclick="event.stopPropagation(); deleteDailyShoppingItem(event, ${idx})">✖</div><div class="icon-circle" style="border-radius:15px;overflow:hidden;">${it.img?`<img src="${it.img}">`:'🛍️'}</div><div style="flex:1"><b>${it.name}${lowMark}</b><br><small style="color:#999;font-weight:bold;">${it.cat||'其他'}</small><br>${linkBtn}${dropBtn}${trend}</div><div style="text-align:right;">${priceHTML}</div></div>`;
+          const recDate = it.date ? `📅 记录于 ${it.date}` : '';
+          let trendRange = '';
+          const ph2 = it.priceHistory||[];
+          if(ph2.length>1){ trendRange = `<br><small style="color:#bbb;font-size:10px;">📈 ${ph2[0].date} → ${ph2[ph2.length-1].date}</small>`; }
+          list.innerHTML += `<div class="item-card" style="${isPriceDrop(it)?'border-left:4px solid #52C41A;':''}" onclick="openDailyShoppingEdit(${idx})"><div class="del-btn-round" onclick="event.stopPropagation(); deleteDailyShoppingItem(event, ${idx})">✖</div><div class="icon-circle" style="border-radius:15px;overflow:hidden;">${it.img?`<img src="${it.img}">`:'🛍️'}</div><div style="flex:1"><b>${it.name}${lowMark}</b><br><small style="color:#999;font-weight:bold;">${it.cat||'其他'}</small><br><small style="color:#bbb;font-size:10px;">${recDate}</small>${linkBtn}${dropBtn}${trend}${trendRange}</div><div style="text-align:right;">${priceHTML}</div></div>`;
         }
       });
       if(list.innerHTML === '') list.innerHTML = '<div class="empty-state"><div class="empty-state-icon">🛍️</div>还没有购物心愿~</div>';
@@ -6817,6 +6822,7 @@ window.__KR_AUDIO_BASE__ = 'https://cccciiii411.github.io/kr-workbench/';</scrip
         cat: document.querySelector('#daily-c-sel .active')?.innerText || '其他'
       };
       obj.priceHistory = (oldW && oldW.priceHistory) ? oldW.priceHistory.slice() : [];
+      obj.date = (oldW && oldW.date) ? oldW.date : new Date().toISOString().slice(0,10);
       const np = effectivePrice(obj);
       const lastH = obj.priceHistory[obj.priceHistory.length-1];
       if(!lastH || lastH.price !== np) obj.priceHistory.push({date: new Date().toISOString().slice(0,10), price: np});
@@ -6902,7 +6908,7 @@ window.__KR_AUDIO_BASE__ = 'https://cccciiii411.github.io/kr-workbench/';</scrip
             const m2 = txt.match(/([0-9]{1,3}(?:,[0-9]{3})+|[0-9]{4,})\s?원/);
             let pr = '';
             if(m1) pr = m1[1].replace(/,/g,''); else if(m2) pr = m2[1].replace(/,/g,'');
-            if(document.getElementById('daily-f-price')){ document.getElementById('daily-f-price').value = pr; updateDailyCnyHint(pr); }
+            if(pr){ if(document.getElementById('daily-f-mprice')){ document.getElementById('daily-f-mprice').value = pr; } hlToast('已识别会员价 ₩'+Number(pr).toLocaleString()); }
             const olines = txt.split(String.fromCharCode(10)).map(l=>l.trim()).filter(l=>l && !/₩|원|^\d+$/.test(l));
             const name = olines.sort((a,b)=>b.length-a.length)[0] || '';
             if(document.getElementById('daily-f-name')) document.getElementById('daily-f-name').value = name;
