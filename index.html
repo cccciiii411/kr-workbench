@@ -6711,7 +6711,7 @@ window.__KR_AUDIO_BASE__ = 'https://cccciiii411.github.io/kr-workbench/';</scrip
     function wishTrendHTML(it){
       const h = it.priceHistory || [];
       if(h.length < 2) return '';
-      const cur = Number(it.price)||0, prev = h[h.length-2].price;
+      const cur = effectivePrice(it), prev = h[h.length-2].price;
       const diff = cur - prev, pct = prev ? (diff/prev*100) : 0, up = diff > 0;
       const color = up ? '#FF4D4F' : '#52C41A', arrow = up ? '▲' : '▼', label = up ? '涨' : '降';
       const vals = h.map(x=>x.price), mn=Math.min.apply(null,vals), mx=Math.max.apply(null,vals), rg=(mx-mn)||1;
@@ -6719,7 +6719,7 @@ window.__KR_AUDIO_BASE__ = 'https://cccciiii411.github.io/kr-workbench/';</scrip
       const spark = `<svg width="56" height="18" style="vertical-align:middle;"><polyline points="${pts}" fill="none" stroke="${color}" stroke-width="1.5"/></svg>`;
       return `<div style="font-size:10px;font-weight:bold;color:${color};margin-top:3px;">${arrow} ${label} ₩${Math.abs(diff).toLocaleString()} (${pct.toFixed(1)}%) ${spark}</div>`;
     }
-    function isPriceDrop(it){ const h=it.priceHistory||[]; if(h.length<2) return false; const cur=Number(it.price)||0; return cur < h[h.length-2].price; }
+    function isPriceDrop(it){ const h=it.priceHistory||[]; if(h.length<2) return false; const cur=effectivePrice(it); return cur < h[h.length-2].price; }
     async function grabPrice(ev, idx){
       const it = store.wish[idx]; if(!it || !it.link){ hlToast('该商品没有填写商品链接'); return; }
       const btn = ev && ev.target; if(btn){ btn.innerText='抓取中…'; btn.disabled=true; }
@@ -6750,6 +6750,7 @@ window.__KR_AUDIO_BASE__ = 'https://cccciiii411.github.io/kr-workbench/';</scrip
     let dailyEditIdx = -1;
     let dailyTempImg = '';
 
+    function effectivePrice(it){ const m = Number(it && it.mPrice)||0; return m>0 ? m : (Number(it && it.price)||0); }
     function renderDailyShopping(){
       const catRow = document.getElementById('daily-wish-cat-row');
       const list = document.getElementById('daily-wish-list');
@@ -6771,9 +6772,13 @@ window.__KR_AUDIO_BASE__ = 'https://cccciiii411.github.io/kr-workbench/';</scrip
             else linkBtn = `<a href="${it.link}" target="_blank" style="background:var(--sailor-blue);color:white;padding:6px 10px;border-radius:10px;font-size:10px;font-weight:bold;margin-top:6px;display:inline-block;text-decoration:none;" onclick="event.stopPropagation();">🔗 商品直达</a>`;
           }
           const trend = wishTrendHTML(it);
+          const hasM = it.mPrice && Number(it.mPrice)>0;
+          const priceHTML = hasM
+            ? '<b style="color:var(--neon-pink);font-size:18px;">₩'+Number(it.mPrice).toLocaleString()+'</b><br><small style="color:#999;font-size:11px;font-weight:bold;">💎会员价 ≈ ¥ '+(it.mPrice/RATE).toFixed(1)+'</small><br><small style="color:#bbb;font-size:10px;text-decoration:line-through;">原价 ₩'+Number(it.price||0).toLocaleString()+'</small>'
+            : '<b style="color:var(--neon-pink);font-size:18px;">₩'+Number(it.price||0).toLocaleString()+'</b><br><small style="color:#999;font-size:11px;font-weight:bold;">≈ ¥ '+((it.price||0)/RATE).toFixed(1)+'</small>';
           const dropBtn = it.link ? `<button onclick="event.stopPropagation(); grabDailyPrice(event, ${idx})" style="margin-top:6px;background:#FF9F1C;color:#fff;border:none;border-radius:10px;font-size:10px;font-weight:bold;padding:6px 10px;cursor:pointer;">🔄 抓取价</button>` : '';
           const lowMark = isPriceDrop(it) ? `<span style="background:#52C41A;color:#fff;font-size:9px;font-weight:bold;padding:2px 6px;border-radius:8px;margin-left:6px;">📉 降价</span>` : '';
-          list.innerHTML += `<div class="item-card" style="${isPriceDrop(it)?'border-left:4px solid #52C41A;':''}" onclick="openDailyShoppingEdit(${idx})"><div class="del-btn-round" onclick="event.stopPropagation(); deleteDailyShoppingItem(event, ${idx})">✖</div><div class="icon-circle" style="border-radius:15px;overflow:hidden;">${it.img?`<img src="${it.img}">`:'🛍️'}</div><div style="flex:1"><b>${it.name}${lowMark}</b><br><small style="color:#999;font-weight:bold;">${it.cat||'其他'}</small><br>${linkBtn}${dropBtn}${trend}</div><div style="text-align:right;"><b style="color:var(--neon-pink);font-size:18px;">₩${Number(it.price).toLocaleString()}</b><br><small style="color:#999;font-size:11px;font-weight:bold;">≈ ¥ ${(it.price/RATE).toFixed(1)}</small></div></div>`;
+          list.innerHTML += `<div class="item-card" style="${isPriceDrop(it)?'border-left:4px solid #52C41A;':''}" onclick="openDailyShoppingEdit(${idx})"><div class="del-btn-round" onclick="event.stopPropagation(); deleteDailyShoppingItem(event, ${idx})">✖</div><div class="icon-circle" style="border-radius:15px;overflow:hidden;">${it.img?`<img src="${it.img}">`:'🛍️'}</div><div style="flex:1"><b>${it.name}${lowMark}</b><br><small style="color:#999;font-weight:bold;">${it.cat||'其他'}</small><br>${linkBtn}${dropBtn}${trend}</div><div style="text-align:right;">${priceHTML}</div></div>`;
         }
       });
       if(list.innerHTML === '') list.innerHTML = '<div class="empty-state"><div class="empty-state-icon">🛍️</div>还没有购物心愿~</div>';
@@ -6789,7 +6794,7 @@ window.__KR_AUDIO_BASE__ = 'https://cccciiii411.github.io/kr-workbench/';</scrip
       if(it.cat && store.dailyWishCats && !store.dailyWishCats.includes(it.cat)) store.dailyWishCats.push(it.cat);
       const grabBtn = (it.link && it.link.trim()) ? `<button type="button" onclick="grabDailyPrice(event, ${idx})" style="margin:6px 0 10px;background:#FF9F1C;color:#fff;border:none;border-radius:10px;font-size:12px;font-weight:bold;padding:8px 12px;cursor:pointer;">🔄 尝试自动抓取此链接价格</button>` : '';
       const form = document.getElementById('daily-d-form');
-      form.innerHTML = `${lb('平台')}<div class="selector-group" id="daily-c-sel">${(store.dailyWishCats||[]).map(c=>`<div class="selector-item ${defCat===c?'active':''}" onclick="selectBtn(this)">${c}</div>`).join('')}</div> <input id="daily-f-name" class="f-input" placeholder="想要买什么？" value="${it.name||''}"> <input id="daily-f-link" class="f-input" placeholder="商品直达 URL" value="${it.link||''}"> <input id="daily-f-price" class="f-input" type="number" placeholder="预算 ₩" value="${it.price||''}" oninput="updateDailyCnyHint(this.value)"><div id="daily-c-hint" style="font-size:12px;color:var(--sailor-purple);margin:-8px 0 15px 5px;font-weight:bold;">≈ ¥ ${(it.price? (it.price/RATE).toFixed(1) : '0.0')}</div>${grabBtn}`;
+      form.innerHTML = `${lb('平台')}<div class="selector-group" id="daily-c-sel">${(store.dailyWishCats||[]).map(c=>`<div class="selector-item ${defCat===c?'active':''}" onclick="selectBtn(this)">${c}</div>`).join('')}</div> <input id="daily-f-name" class="f-input" placeholder="想要买什么？" value="${it.name||''}"> <input id="daily-f-link" class="f-input" placeholder="商品直达 URL" value="${it.link||''}"> <input id="daily-f-price" class="f-input" type="number" placeholder="预算 ₩" value="${it.price||''}" oninput="updateDailyCnyHint(this.value)"><input id="daily-f-mprice" class="f-input" type="number" placeholder="💎 会员价 ₩（可选·登录后实际价）" value="${it.mPrice||''}"><div id="daily-c-hint" style="font-size:12px;color:var(--sailor-purple);margin:-8px 0 15px 5px;font-weight:bold;">≈ ¥ ${(it.price? (it.price/RATE).toFixed(1) : '0.0')}</div>${grabBtn}`;
       const ptext = document.getElementById('daily-preview-text');
       if(ptext) ptext.innerHTML = dailyTempImg ? `<img src="${dailyTempImg}">` : `📸<br><small style="font-weight:900">拍照识图 / 添加封图</small>`;
       document.getElementById('daily-shopping-drawer').classList.add('active');
@@ -6807,11 +6812,12 @@ window.__KR_AUDIO_BASE__ = 'https://cccciiii411.github.io/kr-workbench/';</scrip
         name: name,
         link: getDailyV('daily-f-link'),
         price: getDailyV('daily-f-price'),
+        mPrice: getDailyV('daily-f-mprice'),
         img: dailyTempImg || (oldW?oldW.img:''),
         cat: document.querySelector('#daily-c-sel .active')?.innerText || '其他'
       };
       obj.priceHistory = (oldW && oldW.priceHistory) ? oldW.priceHistory.slice() : [];
-      const np = Number(obj.price)||0;
+      const np = effectivePrice(obj);
       const lastH = obj.priceHistory[obj.priceHistory.length-1];
       if(!lastH || lastH.price !== np) obj.priceHistory.push({date: new Date().toISOString().slice(0,10), price: np});
       if(dailyEditIdx>-1) store.dailyWish[dailyEditIdx]=obj; else store.dailyWish.push(obj);
@@ -6867,8 +6873,9 @@ window.__KR_AUDIO_BASE__ = 'https://cccciiii411.github.io/kr-workbench/';</scrip
         if(inp){ inp.value=p; updateDailyCnyHint(p); }
         store.dailyWish[idx].price = p;
         const ph=store.dailyWish[idx].priceHistory||[];
+        const np2=effectivePrice(store.dailyWish[idx]);
         const last=ph[ph.length-1];
-        if(!last||last.price!==p) ph.push({date:new Date().toISOString().slice(0,10),price:p});
+        if(!last||last.price!==np2) ph.push({date:new Date().toISOString().slice(0,10),price:np2});
         store.dailyWish[idx].priceHistory=ph;
         localCommit();
         renderDailyShopping();
