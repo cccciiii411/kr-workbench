@@ -2332,17 +2332,42 @@ window.__KR_AUDIO_BASE__ = 'https://cccciiii411.github.io/kr-workbench/';</scrip
         if (bestD <= 2 && Math.abs(s.length - best.length) <= 1 && best) return best;
         return s;
     }
+    // 常见 OCR 把字段最后一个中文字替换成 U+FFFD，sanitize 后会丢失该字；这里做兜底修复
+    function hlFixTruncatedLabel(s) {
+        if (typeof s !== 'string') return s;
+        const fixes = {
+            '每日剂': '每日剂量',
+            '每日用': '每日用量',
+            '建议用': '建议用量',
+            '服用方': '服用方法',
+            '使用方': '使用方法',
+            '注意事': '注意事项'
+        };
+        return fixes[s] || s;
+    }
     // 修脏数据：含 fffd 的名字多半是 AI OCR 出来的"无法识别"。
-    // 处理 supps / suppProfiles / customFoods：把 sanitize 后的名字做模糊归一（Levenshtein + 别名）
+    // 处理 supps / suppProfiles / customFoods / meals：把 sanitize 后的名字做模糊归一（Levenshtein + 别名）
     // 退回 SUPP_DB 同名，避免显示两份；sanitize 后空 → 「未知补剂」让用户改名，不删数据。
     function hlCleanCorruptNames(h) {
         if (!h) return;
-        // 1) supps：归一名字
+        // 1) supps：归一名字，并清洗成分字段
         if (Array.isArray(h.supps)) {
             h.supps.forEach(s => {
                 if (!s || typeof s !== 'object') return;
                 const norm = hlNormalizeSuppName(s.name);
                 s.name = norm || '未知补剂';
+                if (Array.isArray(s.ingredients)) {
+                    s.ingredients = s.ingredients.map(ing => {
+                        if (!ing || typeof ing !== 'object') return ing;
+                        if (typeof ing.n === 'string') {
+                            ing.n = hlSanitizeName(ing.n);
+                            ing.n = hlFixTruncatedLabel(ing.n);
+                            if (!ing.n) ing.n = '未识别成分';
+                        }
+                        if (typeof ing.a === 'string') ing.a = hlSanitizeName(ing.a);
+                        return ing;
+                    }).filter(Boolean);
+                }
             });
         }
         // 2) suppProfiles：以归一后名字为新 key，旧 key 迁移、合并 ingredients/brand/updatedAt 等字段
@@ -2367,12 +2392,39 @@ window.__KR_AUDIO_BASE__ = 'https://cccciiii411.github.io/kr-workbench/';</scrip
                     rebuilt[norm] = merged;
                 }
             }
+            // 深度清洗每个 profile 内部字符串字段（成分名、剂量、品牌、OCR 原文）
+            for (const norm of Object.keys(rebuilt)) {
+                const prof = rebuilt[norm];
+                if (typeof prof.brand === 'string') prof.brand = hlSanitizeName(prof.brand);
+                if (typeof prof.ocrText === 'string') prof.ocrText = hlSanitizeName(prof.ocrText);
+                if (Array.isArray(prof.ingredients)) {
+                    prof.ingredients = prof.ingredients.map(ing => {
+                        if (!ing || typeof ing !== 'object') return ing;
+                        if (typeof ing.n === 'string') {
+                            ing.n = hlSanitizeName(ing.n);
+                            ing.n = hlFixTruncatedLabel(ing.n);
+                            if (!ing.n) ing.n = '未识别成分';
+                        }
+                        if (typeof ing.a === 'string') ing.a = hlSanitizeName(ing.a);
+                        return ing;
+                    }).filter(Boolean);
+                }
+            }
             h.suppProfiles = rebuilt;
         }
         // 3) customFoods：归一 name
         if (Array.isArray(h.customFoods)) {
             h.customFoods.forEach(f => {
                 if (f && typeof f === 'object') f.n = hlNormalizeSuppName(f.n) || f.n;
+            });
+        }
+        // 4) meals：清洗食物名，防止 AI OCR 食物名乱码
+        if (Array.isArray(h.meals)) {
+            h.meals.forEach(m => {
+                if (m && typeof m === 'object' && typeof m.name === 'string') {
+                    const clean = hlSanitizeName(m.name);
+                    m.name = clean || m.name;
+                }
             });
         }
     }
