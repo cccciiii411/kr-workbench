@@ -2393,7 +2393,7 @@ window.__KR_AUDIO_BASE__ = 'https://cccciiii411.github.io/kr-workbench/';</scrip
     }
 
     /* ========== 云端同步层（叠加，不改上面任何逻辑；并集合并，只补不删）========== */
-    let   HL_API_TOKEN = localStorage.getItem('HL_API_TOKEN') || '';   // 公开托管时不写死：首次在页面粘贴一次即存入 localStorage 永久记住
+    let   HL_API_TOKEN = localStorage.getItem('HL_API_TOKEN') || '2de796c607136c835b30e0c05052ce05e311f899ade72c79';   // 默认填入项目同步令牌；本地若存过别的 token 仍以本地为准
     const HL_API_URL   = 'https://health-workbench-production.up.railway.app';
     const HL_SYNC      = true;
     let   HL_SYNC_READY = false;
