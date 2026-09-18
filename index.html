@@ -1288,6 +1288,33 @@
         .hl-today-btn:active { transform: scale(0.93); }
         .hl-date-row2 { display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 2px; }
         .hl-period-box { background: rgba(255,255,255,0.8); border-radius: 18px; padding: 16px; border: 1.5px solid rgba(255,255,255,0.9); margin-bottom: 12px; }
+        .hl-sec-title { margin:18px 0 10px; font-size:14px; font-weight:800; color:var(--brown); display:flex; align-items:center; justify-content:space-between; }
+        .hl-sec-sub { font-size:10px; font-weight:700; color:#999; background:rgba(0,0,0,0.04); padding:2px 7px; border-radius:6px; }
+        /* ===== 板块拖拽排序（身体管理） ===== */
+        .hl-dragsec { position: relative; }
+        .hl-drag-handle { position:absolute; top:-11px; right:4px; z-index:7; font-size:10px; font-weight:800; color:#7b68ee; background:rgba(255,255,255,0.92); border:1px solid rgba(123,104,238,0.28); border-radius:9px; padding:1px 8px; cursor:grab; opacity:0.30; transition:opacity .15s, background .15s, transform .15s; user-select:none; -webkit-user-select:none; touch-action:none; white-space:nowrap; box-shadow:0 1px 4px rgba(123,104,238,0.12); }
+        .hl-dragsec:hover > .hl-drag-handle { opacity:1; transform:translateY(-1px); }
+        .hl-drag-handle:active { cursor:grabbing; background:rgba(123,104,238,0.16); }
+        .hl-dragsec.hl-dragging { opacity:0.55; outline:2px dashed rgba(123,104,238,0.55); outline-offset:4px; border-radius:12px; }
+        .hl-dragsec.hl-dragging > .hl-drag-handle { opacity:1; cursor:grabbing; }
+        .hl-sort-tip { font-size:10px; color:#999; background:rgba(123,104,238,0.08); border-radius:8px; padding:3px 8px; margin:0 0 6px; display:inline-block; }
+        /* 日历：同一框内 身体 / 日常 两张卡片切换（身体在左=粉，日常在右=薰衣草） */
+        .hl-cal-tabs { display:flex; gap:8px; margin:0 0 10px; }
+        #view-daily-health .hl-cal-tab { flex:1; padding:9px 10px; border-radius:12px; border:1.5px solid rgba(255,153,204,0.22); background:rgba(255,255,255,0.6); color:#999; font-size:12.5px; font-weight:800; cursor:pointer; transition:0.15s; }
+        #view-daily-health .hl-cal-tab.on { background:linear-gradient(135deg, var(--sailor-pink), var(--soft-pink)); color:#fff; border-color:transparent; box-shadow:0 3px 10px rgba(255,153,204,0.3); }
+        #view-daily-health .hl-cal-tab.on#hl-cal-tab-life { background:linear-gradient(135deg, #8aa0ec, #b9c4f0); box-shadow:0 3px 10px rgba(123,104,238,0.3); }
+        .hl-period-status { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
+        .hl-card-tabs { display:flex; gap:8px; margin:0 0 10px; }
+        #view-daily-health .hl-card-tab { flex:1; padding:9px 10px; border-radius:12px; border:1.5px solid rgba(255,153,204,0.22); background:rgba(255,255,255,0.6); color:#999; font-size:12.5px; font-weight:800; cursor:pointer; transition:0.15s; }
+        #view-daily-health .hl-card-tab.on { background:linear-gradient(135deg, var(--sailor-pink), var(--soft-pink)); color:#fff; border-color:transparent; box-shadow:0 3px 10px rgba(255,153,204,0.3); }
+        #view-daily-health .hl-card-tab.on#hl-card-tab-life { background:linear-gradient(135deg, #8aa0ec, #b9c4f0); box-shadow:0 3px 10px rgba(123,104,238,0.3); }
+        /* 日常日历：用柔和薰衣草蓝区分于身体日历的粉色调 */
+        #view-daily-health .hl-life-cal .hl-cal-day { background:#fff; border-color:rgba(123,104,238,0.14); }
+        #view-daily-health .hl-life-cal .hl-cal-day.has-life { background:#eef1ff; border-color:rgba(123,104,238,0.34); }
+        #view-daily-health .hl-life-cal .hl-cal-bar { background:#c9d2f7; }
+        #view-daily-health .hl-life-cal .hl-cal-day.selected-day { border-color:#7b68ee; box-shadow:0 0 0 2px rgba(123,104,238,0.28); }
+        #view-daily-health .hl-life-cal .hl-cal-day.today-day { box-shadow:0 0 0 2.5px #7b68ee; }
+        #view-daily-health .hl-life-cal .hl-cal-day.has-life .hl-cal-day-text { color:#5b6fd6; }
         .hl-period-status { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
         .hl-phase-pill { padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 900; color: white; }
         .hl-period-countdown { font-size: 14px; font-weight: 800; color: var(--brown); }
@@ -1299,28 +1326,119 @@
         .hl-cal-week { background: rgba(255,255,255,0.65); border-radius: 14px; padding: 10px 8px 8px; margin-bottom: 6px; transition: 0.18s; border: 2px solid transparent; }
         .hl-cal-week:hover { background: rgba(255,255,255,0.92); transform: translateY(-1px); }
         .hl-cal-week.today-week { background: linear-gradient(135deg, rgba(170,130,255,0.14), rgba(255,153,204,0.06)); border-color: rgba(170,130,255,0.35); }
-        .hl-cal-days { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; margin-bottom: 7px; }
-        .hl-cal-day { aspect-ratio: 1; max-width: 42px; margin: 0 auto; display: flex; align-items: center; justify-content: center; cursor: pointer; border-radius: 50%; transition: 0.15s; position: relative; }
-        .hl-cal-day:hover { transform: scale(1.12); }
-        .hl-cal-day.phase-empty { background: rgba(0,0,0,0.035); }
-        .hl-cal-day.phase-fertile { background: #ffd1d8; }
-        .hl-cal-day.phase-ovulation { background: #ff8a9b; }
-        .hl-cal-day.phase-luteal { background: #e8e0ff; }
-        .hl-cal-day.phase-pms { background: #c4b5ff; }
-        .hl-cal-day.period-day { background: #e74c3c; }
+        .hl-cal-days { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-bottom: 7px; }
+        .hl-cal-day { min-height: 58px; padding: 7px 2px 4px; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; cursor: pointer; border-radius: 11px; transition: 0.15s; position: relative; border: 1.5px solid rgba(0,0,0,0.06); background: #fff; overflow: hidden; }
+        .hl-cal-day:hover { transform: translateY(-2px); box-shadow: 0 5px 12px rgba(0,0,0,0.10); }
+        .hl-cal-day.selected-day { border-color: #7b68ee; box-shadow: 0 0 0 2px rgba(123,104,238,0.28); }
+        .hl-cal-day.phase-empty { background: rgba(0,0,0,0.025); }
+        .hl-cal-day.phase-fertile { background: #fbe1eb; }
+        .hl-cal-day.phase-ovulation { background: #fcecf4; }
+        .hl-cal-day.phase-luteal { background: #f3eaf5; }
+        .hl-cal-day.phase-pms { background: #f1ecfb; }
+        .hl-cal-day.period-day { background: #fbe6ec; }
         .hl-cal-day.today-day { box-shadow: 0 0 0 2.5px #7b68ee; z-index: 2; }
-        .hl-cal-day.outside-day { opacity: 0.32; }
-        .hl-cal-day-text { font-size: 15px; font-weight: 800; color: #666; }
-        .hl-cal-day.period-day .hl-cal-day-text { color: white; }
-        .hl-cal-day.today-day .hl-cal-day-text { color: #7b68ee; }
+        .hl-cal-day.outside-day { opacity: 0.42; }
+        .hl-cal-bar { position: absolute; top: 0; left: 0; right: 0; height: 4px; }
+        .hl-cal-day-text { font-size: 13px; font-weight: 800; color: #444; line-height: 1; }
+        .hl-cal-day.period-day .hl-cal-day-text { color: #d9342b; }
+        .hl-cal-day.today-day .hl-cal-day-text { color: #6a55e0; }
+        .hl-cal-w { font-size: 10px; font-weight: 800; color: #c06a8a; margin-top: 3px; line-height: 1.1; white-space: nowrap; }
+        .hl-cal-sym { display: flex; gap: 2px; margin-top: 2px; flex-wrap: wrap; justify-content: center; align-items: center; }
+        .hl-cal-symdot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; }
+        .hl-cal-meal { font-size: 8px; color: #8a8a8a; margin-top: 1px; line-height: 1; }
+        .hl-cal-pbtn { position: absolute; top: 6px; right: 3px; width: 9px; height: 9px; border-radius: 50%; border: 1.5px solid rgba(0,0,0,0.22); background: transparent; cursor: pointer; z-index: 3; }
+        .hl-cal-day.period-day .hl-cal-pbtn { background: #b8486a; border-color: #b8486a; }
         .hl-cal-strip { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
         .hl-cal-strip-cell { height: 5px; border-radius: 2px; }
         .hl-cal-strip-cell.phase-empty { background: rgba(0,0,0,0.04); }
-        .hl-cal-strip-cell.phase-fertile { background: #ffd1d8; }
-        .hl-cal-strip-cell.phase-ovulation { background: #ff8a9b; }
-        .hl-cal-strip-cell.phase-luteal { background: #e8e0ff; }
-        .hl-cal-strip-cell.phase-pms { background: #c4b5ff; }
-        .hl-cal-strip-cell.phase-period { background: #e74c3c; }
+        .hl-cal-strip-cell.phase-fertile { background: #d96f9c; }
+        .hl-cal-strip-cell.phase-ovulation { background: #eebfd6; }
+        .hl-cal-strip-cell.phase-luteal { background: #c39bd0; }
+        .hl-cal-strip-cell.phase-pms { background: #9b82dd; }
+        .hl-cal-strip-cell.phase-period { background: #b8486a; }
+        /* ===== 身体状况症状 ===== */
+        #view-daily-health .hl-symptom-card { background: linear-gradient(135deg, rgba(255,153,204,0.07), rgba(123,104,238,0.05)); border: 1.5px solid rgba(255,153,204,0.22); border-radius: 14px; padding: 14px 16px; margin-bottom: 14px; }
+        #view-daily-health .hl-symptom-title { font-size: 13px; font-weight: 800; color: var(--brown); margin-bottom: 3px; }
+        #view-daily-health .hl-symptom-sub { font-size: 11px; color: #aaa; margin-bottom: 10px; }
+        #view-daily-health .hl-symptom-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+        #view-daily-health .hl-symptom-chip { font-size: 12px; padding: 6px 13px; border-radius: 16px; background: rgba(255,255,255,0.7); border: 1.5px solid rgba(0,0,0,0.08); color: #777; cursor: pointer; transition: all 0.15s; user-select: none; }
+        #view-daily-health .hl-symptom-chip:hover { border-color: rgba(255,153,204,0.5); }
+        #view-daily-health .hl-symptom-chip.on { background: linear-gradient(135deg, var(--sailor-pink), var(--soft-pink)); color: #fff; border-color: transparent; box-shadow: 0 3px 10px rgba(255,153,204,0.3); }
+        #view-daily-health .hl-symptom-chip.custom-add { border-style: dashed; color: #bbb; }
+        #view-daily-health .hl-symptom-sev { font-size: 12px; color: #888; margin-bottom: 4px; }
+        #view-daily-health .hl-symptom-sev span { display: inline-flex; align-items: center; gap: 5px; margin-right: 14px; cursor: pointer; color: #555; }
+        #view-daily-health .hl-symptom-sev .dot { width: 11px; height: 11px; border-radius: 50%; border: 1.5px solid rgba(0,0,0,0.2); }
+        #view-daily-health .hl-symptom-sev span.on .dot { background: var(--sailor-purple); border-color: var(--sailor-purple); }
+        #view-daily-health .hl-symptom-note { width: 100%; margin-top: 8px; padding: 8px 10px; border: 1px solid rgba(0,0,0,0.1); border-radius: 8px; font-size: 12px; resize: vertical; box-sizing: border-box; font-family: inherit; }
+        .hl-symptom-dot { position: absolute; bottom: 3px; left: 50%; transform: translateX(-50%); width: 6px; height: 6px; border-radius: 50%; background: #ff5a8a; box-shadow: 0 0 0 1.5px #fff; }
+        #view-daily-health .hl-daily-tabs { display: flex; gap: 8px; margin: 4px 0 12px; }
+        #view-daily-health .hl-daily-tab { flex: 1; padding: 9px 10px; border-radius: 12px; border: 1.5px solid rgba(255,153,204,0.22); background: rgba(255,255,255,0.6); color: #999; font-size: 12.5px; font-weight: 800; cursor: pointer; transition: 0.15s; }
+        #view-daily-health .hl-daily-tab.on { background: linear-gradient(135deg, var(--sailor-pink), var(--soft-pink)); color: #fff; border-color: transparent; box-shadow: 0 3px 10px rgba(255,153,204,0.3); }
+        #view-daily-health .hl-dailylife-card { background: linear-gradient(135deg, rgba(123,104,238,0.06), rgba(255,153,204,0.05)); border: 1.5px solid rgba(123,104,238,0.2); border-radius: 14px; padding: 14px 16px; margin-bottom: 14px; }
+        #view-daily-health .hl-dailylife-title { font-size: 13px; font-weight: 800; color: var(--brown); margin-bottom: 10px; }
+        #view-daily-health .hl-life-list { display: flex; flex-direction: column; gap: 7px; margin-bottom: 12px; }
+        #view-daily-health .hl-life-empty { font-size: 11px; color: #bbb; padding: 8px 0 4px; }
+        #view-daily-health .hl-life-item { display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.8); border: 1px solid rgba(0,0,0,0.06); border-radius: 11px; padding: 7px 10px; font-size: 12px; }
+        #view-daily-health .hl-life-tag { font-size: 10px; font-weight: 800; color: #7b68ee; background: rgba(123,104,238,0.12); padding: 2px 8px; border-radius: 8px; flex-shrink: 0; }
+        #view-daily-health .hl-life-text { flex: 1; color: #444; word-break: break-all; }
+        #view-daily-health .hl-life-cost { font-size: 11px; font-weight: 800; color: #fa8c16; flex-shrink: 0; }
+        #view-daily-health .hl-life-del { border: none; background: rgba(0,0,0,0.05); color: #c99; width: 20px; height: 20px; border-radius: 50%; cursor: pointer; font-size: 11px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: 0.15s; }
+        #view-daily-health .hl-life-del:hover { background: #e74c3c; color: #fff; }
+        #view-daily-health .hl-life-cats { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 10px; }
+        #view-daily-health .hl-life-cat { font-size: 11px; padding: 5px 11px; border-radius: 14px; background: rgba(255,255,255,0.7); border: 1.5px solid rgba(0,0,0,0.08); color: #888; cursor: pointer; transition: 0.15s; user-select: none; }
+        #view-daily-health .hl-life-cat.on { background: linear-gradient(135deg, var(--sailor-purple), #9b82dd); color: #fff; border-color: transparent; }
+        #view-daily-health .hl-life-add { display: flex; gap: 7px; align-items: center; }
+        #view-daily-health .hl-life-input { flex: 1; min-width: 0; padding: 8px 10px; border: 1.5px solid rgba(123,104,238,0.2); border-radius: 10px; font-size: 12px; box-sizing: border-box; font-family: inherit; }
+        #view-daily-health .hl-life-input:focus { outline: none; border-color: var(--sailor-purple); }
+        #view-daily-health .hl-life-cost-in { width: 88px; flex-shrink: 0; padding: 8px 10px; border: 1.5px solid rgba(123,104,238,0.2); border-radius: 10px; font-size: 12px; box-sizing: border-box; }
+        #view-daily-health .hl-life-add-btn { padding: 8px 14px; background: linear-gradient(135deg,#7b68ee,#ff99cc); color: white; border: none; border-radius: 10px; font-size: 12.5px; font-weight: 800; cursor: pointer; white-space: nowrap; flex-shrink: 0; transition: 0.15s; }
+        #view-daily-health .hl-life-add-btn:active { transform: scale(0.96); }
+        #view-daily-health .hl-cal-life { font-size: 11px; color: #5b6fd6; margin-top: 1px; line-height: 1; letter-spacing: 0; white-space: nowrap; }
+        #view-daily-health .hl-life-emoji-row { display: flex; flex-wrap: wrap; gap: 5px; align-items: center; margin-bottom: 10px; }
+        #view-daily-health .hl-life-emoji-hint { font-size: 10px; color: #aaa; font-weight: 700; margin-right: 2px; }
+        #view-daily-health .hl-life-emoji { font-size: 16px; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; border-radius: 8px; background: rgba(255,255,255,0.7); border: 1.5px solid rgba(0,0,0,0.08); cursor: pointer; transition: 0.15s; user-select: none; }
+        #view-daily-health .hl-life-emoji.on { border-color: #7b68ee; background: rgba(123,104,238,0.12); transform: scale(1.06); }
+        #view-daily-health .hl-life-mgr-btn { font-size: 13px; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; border-radius: 8px; background: rgba(123,104,238,0.08); border: 1.5px dashed rgba(123,104,238,0.35); color: #7b68ee; cursor: pointer; transition: 0.15s; }
+        #view-daily-health .hl-life-mgr-btn:hover { background: rgba(123,104,238,0.18); }
+        #view-daily-health .hl-life-mgr-btn.on { background: linear-gradient(135deg,#7b68ee,#9b82dd); border-style: solid; border-color: transparent; color: #fff; }
+        #view-daily-health .hl-life-mgr { background: rgba(123,104,238,0.055); border: 1.5px dashed rgba(123,104,238,0.3); border-radius: 12px; padding: 10px 11px 11px; margin-bottom: 11px; }
+        #view-daily-health .hl-mgr-head { display: flex; align-items: baseline; gap: 7px; font-size: 11px; font-weight: 800; color: #7b68ee; margin: 2px 0 7px; }
+        #view-daily-health .hl-mgr-head + .hl-mgr-head { margin-top: 12px; }
+        #view-daily-health .hl-mgr-tip { font-size: 9.5px; font-weight: 700; color: #b0a8d8; }
+        #view-daily-health .hl-mgr-grid { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+        #view-daily-health .hl-mgr-chip { display: inline-flex; align-items: center; gap: 1px; background: rgba(255,255,255,0.85); border: 1.5px solid rgba(0,0,0,0.07); border-radius: 9px; padding: 1px 3px 1px 1px; transition: 0.15s; }
+        #view-daily-health .hl-mgr-chip .em { font-size: 15px; width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; cursor: pointer; border-radius: 7px; }
+        #view-daily-health .hl-mgr-chip.txt .em { font-size: 11px; width: auto; padding: 0 7px; font-weight: 700; color: #666; }
+        #view-daily-health .hl-mgr-chip .em:hover { background: rgba(123,104,238,0.12); }
+        #view-daily-health .hl-mgr-chip b { font-size: 9.5px; font-weight: 800; width: 16px; height: 16px; display: flex; align-items: center; justify-content: center; border-radius: 50%; cursor: pointer; font-style: normal; flex-shrink: 0; }
+        #view-daily-health .hl-mgr-chip b.no { background: rgba(0,0,0,0.05); color: #c99; }
+        #view-daily-health .hl-mgr-chip b.no:hover { background: #e74c3c; color: #fff; }
+        #view-daily-health .hl-mgr-chip b.ok { background: rgba(45,206,137,0.15); color: #1d9e75; }
+        #view-daily-health .hl-mgr-chip b.ok:hover { background: #2dce89; color: #fff; }
+        #view-daily-health .hl-mgr-chip.editing { border-color: #7b68ee; background: #fff; padding: 1px 3px; }
+        #view-daily-health .hl-mgr-in { padding: 5px 8px; border: 1.5px solid rgba(123,104,238,0.25); border-radius: 8px; font-size: 12px; box-sizing: border-box; font-family: inherit; background: #fff; }
+        #view-daily-health .hl-mgr-in:focus { outline: none; border-color: #7b68ee; }
+        #view-daily-health .hl-mgr-in.em { width: 40px; text-align: center; padding: 4px 2px; font-size: 14px; }
+        #view-daily-health .hl-mgr-in.cat { width: 74px; }
+        #view-daily-health .hl-mgr-in.new { flex: 1; min-width: 0; }
+        #view-daily-health .hl-mgr-add { display: flex; gap: 6px; align-items: center; }
+        #view-daily-health .hl-mgr-addbtn { padding: 6px 11px; background: linear-gradient(135deg,#7b68ee,#9b82dd); color: #fff; border: none; border-radius: 8px; font-size: 11.5px; font-weight: 800; cursor: pointer; white-space: nowrap; flex-shrink: 0; }
+        #view-daily-health .hl-mgr-addbtn:active { transform: scale(0.96); }
+        #view-daily-health .hl-life-emoji-show { font-size: 15px; flex-shrink: 0; }
+        #view-daily-health .hl-life-item.editing { flex-wrap: wrap; background: rgba(123,104,238,0.05); border-color: rgba(123,104,238,0.25); }
+        #view-daily-health .hl-life-edit-form { width: 100%; display: flex; flex-direction: column; gap: 8px; }
+        #view-daily-health .hl-life-edit-input { width: 100%; padding: 8px 10px; border: 1.5px solid rgba(123,104,238,0.2); border-radius: 10px; font-size: 12px; box-sizing: border-box; font-family: inherit; }
+        #view-daily-health .hl-life-edit-input:focus { outline: none; border-color: #7b68ee; }
+        #view-daily-health .hl-life-edit-actions { display: flex; gap: 8px; }
+        #view-daily-health .hl-life-edit-btn { padding: 7px 14px; border-radius: 10px; border: none; font-size: 12px; font-weight: 800; cursor: pointer; transition: 0.15s; }
+        #view-daily-health .hl-life-edit-btn.save { background: linear-gradient(135deg,#2dce89,#1d9e75); color: #fff; }
+        #view-daily-health .hl-life-edit-btn.cancel { background: rgba(0,0,0,0.06); color: #888; }
+        #view-daily-health .hl-life-edit-btn.amort { background: rgba(123,104,238,0.1); color: #7b68ee; width: 100%; }
+        #view-daily-health .hl-life-edit-btn.amort.on { background: linear-gradient(135deg,#7b68ee,#9b82dd); color: #fff; }
+        #view-daily-health .hl-life-amort-info { font-size: 11px; color: #7b68ee; font-weight: 700; line-height: 1.4; }
+        #view-daily-health .hl-life-amort-val { font-size: 11px; font-weight: 800; color: #1d9e75; flex-shrink: 0; }
+        #view-daily-health .hl-life-edit { border: none; background: rgba(123,104,238,0.1); color: #7b68ee; width: 20px; height: 20px; border-radius: 50%; cursor: pointer; font-size: 11px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: 0.15s; }
+        #view-daily-health .hl-life-edit:hover { background: #7b68ee; color: #fff; }
         .hl-cal-legend { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px; font-size: 10px; color: #888; font-weight: 700; padding: 0 4px; }
         .hl-cal-leg-dot { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 3px; vertical-align: middle; }
         .hl-period-add-row { display: flex; gap: 6px; flex-wrap: wrap; align-items: flex-end; margin-top: 12px; }
@@ -1952,7 +2070,7 @@ window.__KR_AUDIO_BASE__ = 'https://cccciiii411.github.io/kr-workbench/';</scrip
                 </div>
                 <div style="font-size:11px;color:#a04030;">📌 你在 file:// 填的数据不会丢：在本页点「📤 导出」存成 JSON，再到上面的 localhost 页面「📥 导入」即可并入云端。</div>
             </div>
-            <div class="glass-card">
+            <div class="glass-card" id="hl-body-card">
                 <div style="display:flex;justify-content:space-between;align-items:center;">
                     <div class="card-title">⚖️ 身体管理 <span id="hl-sync-badge" onclick="hlForceSync()" title="点击手动同步" style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:8px;background:rgba(123,104,238,0.1);color:#7b68ee;cursor:pointer;vertical-align:middle;">☁️ 同步中…</span></div>
                     <div style="display:flex;gap:6px;">
@@ -1978,8 +2096,36 @@ window.__KR_AUDIO_BASE__ = 'https://cccciiii411.github.io/kr-workbench/';</scrip
                     </div>
                     <button class="hl-date-arrow" onclick="hlShiftDate(1)">›</button>
                 </div>
-                <div id="hl-today-overview" class="hl-today-ov"></div>
+                <div class="hl-sort-tip">↕ 板块可自由排序：按住每块右上角「⠿ 拖动」上下拖，顺序自动保存</div>
+                <!-- ===== 可拖拽板块：按住每块右上角「⠿ 拖动」即可自由排序（顺序自动保存在本机） ===== -->
+                <!-- ① 日历：同一框内 身体 / 日常 两张卡片切换（身体在左 · 日常在右） -->
+                <div class="hl-dragsec" data-sec="cal">
+                <div class="hl-sec-title">📅 日历 <span class="hl-sec-sub">身体 / 日常 切换查看</span></div>
+                <div class="hl-cal-tabs">
+                    <button class="hl-cal-tab on" id="hl-cal-tab-body" onclick="hlSwitchCalView('body')">🩺 身体</button>
+                    <button class="hl-cal-tab" id="hl-cal-tab-life" onclick="hlSwitchCalView('life')">📝 日常</button>
+                </div>
+                <div id="hl-period-area"></div>
+                </div>
+                <!-- ② 今日记录 -->
+                <div class="hl-dragsec" data-sec="rec">
+                <div class="hl-sec-title">📋 今日记录 <span class="hl-sec-sub">身体状况 / 日常管理 切换</span></div>
+                <div class="hl-card-tabs">
+                    <button class="hl-card-tab on" id="hl-card-tab-symp" onclick="hlSwitchCardView('symp')">🩺 身体状况</button>
+                    <button class="hl-card-tab" id="hl-card-tab-life" onclick="hlSwitchCardView('life')">📝 日常管理</button>
+                </div>
+                <div id="hl-card-area"></div>
+                </div>
+                <!-- ③ AI 复盘 -->
+                <div class="hl-dragsec" data-sec="review">
                 <div id="hl-daily-review"></div>
+                </div>
+                <!-- ④ 今日饮食（概览卡） -->
+                <div class="hl-dragsec" data-sec="ov">
+                <div id="hl-today-overview" class="hl-today-ov"></div>
+                </div>
+                <!-- ⑤ 体重记录 -->
+                <div class="hl-dragsec" data-sec="weight">
                 <div style="margin:18px 0 10px;font-size:13px;font-weight:800;color:var(--brown);">⚖️ 体重记录</div>
                 <div class="hl-grid2">
                     <div class="hl-weight-in">
@@ -1992,14 +2138,18 @@ window.__KR_AUDIO_BASE__ = 'https://cccciiii411.github.io/kr-workbench/';</scrip
                     </div>
                 </div>
                 <button class="hl-save-btn" id="hl-save-weight-btn" onclick="hlSaveWeight()">记录今日体重</button>
-
+                </div>
+                <!-- ⑥ 体重趋势 -->
+                <div class="hl-dragsec" data-sec="trend">
                 <div style="margin:18px 0 10px;font-size:13px;font-weight:800;color:var(--brown);">📈 体重趋势</div>
                 <div class="hl-chart-box">
                     <div class="hl-chart-legend" id="hl-chart-legend"><span class="hl-leg-dot" style="background:#faad14;"></span>早晨 <span class="hl-leg-dot" style="background:#7b68ee;margin-left:12px;"></span>晚间 <span style="display:inline-block;width:16px;height:2px;background:#e74c3c;margin-left:12px;vertical-align:middle;"></span>7日均线 <span style="display:inline-block;width:16px;height:0;border-top:2px dashed #03C75A;margin-left:12px;vertical-align:middle;"></span>目标 <span style="display:inline-block;width:10px;height:10px;background:rgba(255,0,122,0.15);border-radius:2px;margin-left:12px;vertical-align:middle;"></span>经期</div>
                     <svg id="hl-weight-chart" width="100%" height="200" viewBox="0 0 600 200"></svg>
                 </div>
                 <div id="hl-weight-tip" style="font-size:12px;color:#aaa;margin-top:-8px;margin-bottom:14px;text-align:center;"></div>
-
+                </div>
+                <!-- ⑦ 每日营养目标 -->
+                <div class="hl-dragsec" data-sec="goal">
                 <div style="margin:18px 0 10px;font-size:13px;font-weight:800;color:var(--brown);">🎯 每日营养目标</div>
                 <div class="hl-goal-row">
                     <div style="display:flex;align-items:center;gap:4px;font-size:12px;color:#666;font-weight:700;">热量<input class="hl-goal-inp" id="hl-goal-kcal" value="1350" onchange="hlSaveGoal()">kcal</div>
@@ -2007,7 +2157,9 @@ window.__KR_AUDIO_BASE__ = 'https://cccciiii411.github.io/kr-workbench/';</scrip
                     <div style="display:flex;align-items:center;gap:4px;font-size:12px;color:#666;font-weight:700;">碳水<input class="hl-goal-inp" id="hl-goal-carb" value="125" onchange="hlSaveGoal()">g</div>
                     <div style="display:flex;align-items:center;gap:4px;font-size:12px;color:#666;font-weight:700;">脂肪<input class="hl-goal-inp" id="hl-goal-fat" value="50" onchange="hlSaveGoal()">g</div>
                 </div>
-
+                </div>
+                <!-- ⑧ 今日营养摄入 -->
+                <div class="hl-dragsec" data-sec="nutri">
                 <div style="margin:18px 0 10px;font-size:13px;font-weight:800;color:var(--brown);">🔥 今日营养摄入</div>
                 <div class="hl-nutri-ring-wrap">
                     <svg width="100" height="100" viewBox="0 0 100 100" style="flex-shrink:0;">
@@ -2018,7 +2170,9 @@ window.__KR_AUDIO_BASE__ = 'https://cccciiii411.github.io/kr-workbench/';</scrip
                     </svg>
                     <div class="hl-nutri-bars" id="hl-nutri-bars"></div>
                 </div>
-
+                </div>
+                <!-- ⑨ 饮食记录 -->
+                <div class="hl-dragsec" data-sec="meals">
                 <div style="margin:6px 0 10px;font-size:13px;font-weight:800;color:var(--brown);display:flex;align-items:center;justify-content:space-between;">🍽️ 饮食记录 <span style="font-size:10px;font-weight:700;color:var(--sailor-purple);background:rgba(123,104,238,0.08);padding:3px 8px;border-radius:8px;">💬 发对话自动记录</span></div>
                 <div style="margin:-4px 0 10px;display:flex;justify-content:flex-end;">
                     <button onclick="hlCleanupMeals()" style="font-size:10px;padding:4px 10px;border:1px solid rgba(231,76,60,0.25);border-radius:8px;background:rgba(231,76,60,0.06);cursor:pointer;color:#e74c3c;transition:all 0.2s;" onmouseover="this.style.background='rgba(231,76,60,0.12)'" onmouseout="this.style.background='rgba(231,76,60,0.06)'">🧹 清理重复记录</button>
@@ -2036,7 +2190,9 @@ window.__KR_AUDIO_BASE__ = 'https://cccciiii411.github.io/kr-workbench/';</scrip
                 </div>
                 <div class="hl-food-list" id="hl-food-list" style="display:none;"></div>
                 <div id="hl-meal-list"></div>
-
+                </div>
+                <!-- ⑩ 我的食物库 -->
+                <div class="hl-dragsec" data-sec="lib">
                 <div onclick="hlToggleLib()" style="margin:20px 0 8px;font-size:13px;font-weight:800;color:var(--brown);display:flex;align-items:center;justify-content:space-between;cursor:pointer;">
                     <span>📚 我的食物库 <span id="hl-lib-toggle" style="display:inline-block;transition:transform .2s;color:#7b68ee;transform:rotate(-90deg);">▾</span></span>
                     <span style="font-size:10px;font-weight:700;color:var(--sailor-purple);background:rgba(123,104,238,0.08);padding:3px 8px;border-radius:8px;">自动收录你记过的饮食</span>
@@ -2048,18 +2204,21 @@ window.__KR_AUDIO_BASE__ = 'https://cccciiii411.github.io/kr-workbench/';</scrip
                 </div>
                 <div id="hl-foodlib-list"></div>
                 </div>
-
+                </div>
+                <!-- ⑪ 营养补剂 -->
+                <div class="hl-dragsec" data-sec="supp">
                 <div style="margin:18px 0 10px;font-size:13px;font-weight:800;color:var(--brown);">💊 营养补剂</div>
                 <div id="hl-supp-area"></div>
-
+                </div>
+                <!-- ⑫ 今日微量元素总览 -->
+                <div class="hl-dragsec" data-sec="micro">
                 <div style="margin:22px 0 10px;font-size:13px;font-weight:800;color:var(--brown);display:flex;align-items:center;gap:8px;">
                     🌿 今日微量元素总览
                     <span style="font-size:10px;font-weight:700;color:#999;background:rgba(0,0,0,0.04);padding:2px 7px;border-radius:6px;">饮食 + 补剂合计</span>
                 </div>
                 <div id="hl-micro-area"></div>
+                </div>
 
-                <div style="margin:18px 0 10px;font-size:13px;font-weight:800;color:var(--brown);">🌸 生理期追踪</div>
-                <div id="hl-period-area"></div>
             </div>
         </div>
     </main>
@@ -3260,6 +3419,9 @@ window.__KR_AUDIO_BASE__ = 'https://cccciiii411.github.io/kr-workbench/';</scrip
         const div = document.createElement('div');
         div.textContent = str;
         return div.innerHTML;
+    }
+    function hlAttr(s) {
+        return String(s==null?'':s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
     }
 
     /* ================= 韩语学习 TOPIK II 备考系统 ================= */
@@ -4618,6 +4780,9 @@ window.__KR_AUDIO_BASE__ = 'https://cccciiii411.github.io/kr-workbench/';</scrip
         if(!data.health.supps) data.health.supps = [];
         if(!data.health.removedSupps) data.health.removedSupps = [];
         if(!data.health.suppConfirmed) data.health.suppConfirmed = {};
+        if(!data.health.symptoms) data.health.symptoms = {};
+        if(!data.health.symptomCustom) data.health.symptomCustom = [];
+        if(!data.health.dailyLife) data.health.dailyLife = {};
         // 日期选择器
         const dateInp = document.getElementById('hl-date');
         if(dateInp) { dateInp.value = hlCurDate; dateInp.max = hlRealToday(); }
@@ -4638,11 +4803,391 @@ window.__KR_AUDIO_BASE__ = 'https://cccciiii411.github.io/kr-workbench/';</scrip
         hlRenderWeight();
         hlRenderMeals();
         hlRenderChart();
-        hlRenderPeriod();
+        hlSyncCalTabs();
+        hlRenderCal();
         hlRenderSupp();
+        hlSyncCardTabs();
+        hlRenderCard();
         hlRenderDailyReview();
         hlRenderMicroNutri();
     }
+    /* ========== 身体状况症状记录 ========== */
+    const SYMPTOM_PRESETS = ['水肿','涨肚','牙龈肿','鼻炎','头痛','反酸','便秘','痛经','长痘','疲劳','嗜睡','潮热'];
+    function hlGetSymptomRec(date) {
+        if(!data.health.symptoms) data.health.symptoms = {};
+        if(!data.health.symptoms[date]) data.health.symptoms[date] = { items: [], severity: '', note: '' };
+        return data.health.symptoms[date];
+    }
+    /* ========== 今日记录卡片切换（同一框内 日常管理 / 身体状况 两张卡片） ========== */
+    let hlCardView = 'symp';
+    function hlSwitchCardView(v) { hlCardView = v; hlSyncCardTabs(); hlRenderCard(); }
+    function hlSyncCardTabs() {
+        const tb = document.getElementById('hl-card-tab-life'), tl = document.getElementById('hl-card-tab-symp');
+        if(!tb || !tl) return;
+        if(hlCardView === 'symp') { tb.classList.remove('on'); tl.classList.add('on'); }
+        else { tb.classList.add('on'); tl.classList.remove('on'); }
+    }
+    function hlRenderCard() { if(hlCardView === 'symp') hlRenderSymptoms(); else hlRenderDailyLife(); }
+    function hlRenderSymptoms() {
+        const box = document.getElementById('hl-card-area');
+        if(!box) return;
+        const d = hlCurDate;
+        const rec = hlGetSymptomRec(d);
+        const custom = (data.health.symptomCustom||[]);
+        const all = SYMPTOM_PRESETS.concat(custom);
+        const sel = new Set(rec.items || []);
+        const chips = all.map(n => `<span class="hl-symptom-chip ${sel.has(n)?'on':''}" onclick="hlToggleSymptom('${escapeHtml(n)}')">${escapeHtml(n)}</span>`).join('');
+        const addChip = `<span class="hl-symptom-chip custom-add" onclick="hlAddSymptomCustom()">＋ 自定义</span>`;
+        const sev = ['轻','中','重'].map(s => `<span class="${rec.severity===s?'on':''}" onclick="hlSetSymptomSeverity('${s}')"><span class="dot"></span>${s}</span>`).join('');
+        const has = sel.size > 0;
+        box.innerHTML = `<div class="hl-symptom-card">
+            <div class="hl-symptom-title">🩺 今日身体状况</div>
+            <div class="hl-symptom-sub">${has ? ('已记录 '+sel.size+' 项 · 点击可取消') : '点击下面的症状，记录当天的身体感受'}</div>
+            <div class="hl-symptom-chips">${chips}${addChip}</div>
+            <div class="hl-symptom-sev">严重程度：${sev}</div>
+            <textarea class="hl-symptom-note" rows="1" placeholder="备注（如：下午加重、伴随发烧…）" oninput="hlSetSymptomNote(this.value)">${escapeHtml(rec.note||'')}</textarea>
+        </div>`;
+    }
+    function hlToggleSymptom(name) {
+        const rec = hlGetSymptomRec(hlCurDate);
+        const i = rec.items.indexOf(name);
+        if(i >= 0) rec.items.splice(i, 1); else rec.items.push(name);
+        if(rec.items.length === 0 && !rec.severity && !rec.note) delete data.health.symptoms[hlCurDate];
+        saveData();
+        hlRenderCard(); hlRenderCal(); hlRenderDailyReview();
+    }
+    function hlSetSymptomSeverity(s) {
+        const rec = hlGetSymptomRec(hlCurDate);
+        rec.severity = (rec.severity === s ? '' : s);
+        saveData(); hlRenderCard();
+    }
+    let hlSymNoteTimer = null;
+    function hlSetSymptomNote(val) {
+        const rec = hlGetSymptomRec(hlCurDate);
+        rec.note = val;
+        if(hlSymNoteTimer) clearTimeout(hlSymNoteTimer);
+        hlSymNoteTimer = setTimeout(function(){ saveData(); }, 500);
+    }
+    function hlAddSymptomCustom() {
+        showModal('新增自定义症状', '输入症状名称：', true, function(ok, val){
+            if(ok && val && val.trim()) {
+                val = val.trim();
+                if(!data.health.symptomCustom) data.health.symptomCustom = [];
+                if(!data.health.symptomCustom.includes(val)) data.health.symptomCustom.push(val);
+                const rec = hlGetSymptomRec(hlCurDate);
+                if(!rec.items.includes(val)) rec.items.push(val);
+                saveData(); hlRenderCard(); hlRenderCal(); hlRenderDailyReview();
+            }
+        });
+    }
+
+    /* ========== 日常管理记录 ========== */
+    let hlDailyTab = 'symptom';
+    const LIFE_CATS_DEFAULT = ['美容','账单','日化','购物','家务','医疗','饮食','其他'];
+    const LIFE_EMOJIS_DEFAULT = ['📝','💅','🧴','🛒','💊','💡','🍽️','🏠','💰','👕','🎁','✈️','📦','💄','🧹','🚿','💇','🪥'];
+    function hlGetLifeCats() {
+        if(!data.health) data.health = {};
+        if(!Array.isArray(data.health.lifeCats) || !data.health.lifeCats.length) data.health.lifeCats = LIFE_CATS_DEFAULT.slice();
+        return data.health.lifeCats;
+    }
+    function hlGetLifeEmojis() {
+        if(!data.health) data.health = {};
+        if(!Array.isArray(data.health.lifeEmojis) || !data.health.lifeEmojis.length) data.health.lifeEmojis = LIFE_EMOJIS_DEFAULT.slice();
+        return data.health.lifeEmojis;
+    }
+    function hlEscapeAttr(s) {
+        return String(s==null?'':s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+    let hlLifeEmoji = '📝';
+    let hlEditLifeIdx = -1, hlEditLifeEmoji = '📝', hlEditLifeCat = '';
+    let hlLifeMgrOpen = false, hlMgrEditEmoji = -1, hlMgrEditCat = -1;
+    function hlGetLifeList(date) {
+        if(!data.health.dailyLife) data.health.dailyLife = {};
+        if(!data.health.dailyLife[date]) data.health.dailyLife[date] = [];
+        return data.health.dailyLife[date];
+    }
+    function hlLeadingEmoji(t) {
+        if(!t) return '';
+        const m = t.match(/^(\p{Extended_Pictographic})/u);
+        return m ? m[1] : '';
+    }
+    function hlItemEmoji(it) { return (it && it.emoji) ? it.emoji : hlLeadingEmoji(it ? it.text : ''); }
+    function hlDaysBetween(a, b) {
+        const da = new Date(a + 'T00:00:00'), db = new Date(b + 'T00:00:00');
+        return Math.round((db - da) / 86400000);
+    }
+    function hlLifeDailyValue(it, today) {
+        if(!it || !it.amort || !it.amort.on) return null;
+        const since = it.amort.since || hlCurDate;
+        const days = hlDaysBetween(since, today);
+        if(days <= 0) return { days: days, val: null };
+        const cost = parseFloat(it.cost) || 0;
+        return { days: days, val: cost / days };
+    }
+    function hlLifeCalMark(lifeArr, lifeN) {
+        const em = lifeArr.map(x => hlItemEmoji(x) || '📝');
+        const uniq = [...new Set(em)];
+        if(uniq.length === 1) return uniq[0] + (lifeN > 1 ? lifeN : '');
+        let s = uniq.slice(0, 3).join('');
+        if(lifeN > uniq.length) s += '+';
+        return s;
+    }
+    function hlSyncDailyTab() {
+        const sb = document.getElementById('hl-tab-symptom'), lb = document.getElementById('hl-tab-life');
+        const sbox = document.getElementById('hl-symptoms-box'), lbox = document.getElementById('hl-dailylife-box');
+        if(!sb || !lb || !sbox || !lbox) return;
+        if(hlDailyTab === 'life') { sb.classList.remove('on'); lb.classList.add('on'); sbox.style.display='none'; lbox.style.display=''; }
+        else { sb.classList.add('on'); lb.classList.remove('on'); sbox.style.display=''; lbox.style.display='none'; }
+    }
+    function hlSwitchDailyTab(t) {
+        hlDailyTab = t;
+        hlSyncDailyTab();
+        if(t === 'life') hlRenderDailyLife(); else hlRenderSymptoms();
+    }
+    let hlLifeCat = '';
+    function hlRenderDailyLife() {
+        const box = document.getElementById('hl-card-area');
+        if(!box) return;
+        const d = hlCurDate;
+        const list = hlGetLifeList(d);
+        const today = hlRealToday();
+        const CATS = hlGetLifeCats(), EMOJIS = hlGetLifeEmojis();
+        const catChips = CATS.map((c,i) => `<span class="hl-life-cat ${hlLifeCat===c?'on':''}" onclick="hlPickLifeCat(${i})">${escapeHtml(c)}</span>`).join('');
+        const emojiChips = EMOJIS.map((e,i) => `<span class="hl-life-emoji ${hlLifeEmoji===e?'on':''}" onclick="hlPickLifeEmoji(${i})">${hlEscapeAttr(e)}</span>`).join('');
+        const items = list.length ? list.map((it,idx) => {
+            if(idx === hlEditLifeIdx) return hlLifeEditForm(it, idx);
+            const cost = (it.cost>0) ? ('¥'+Number(it.cost).toFixed(it.cost%1?2:0)) : '';
+            const cat = it.cat || '其他';
+            const em = hlItemEmoji(it);
+            const dv = hlLifeDailyValue(it, today);
+            let amortTag = '';
+            if(dv) amortTag = dv.val!=null
+                ? `<span class="hl-life-amort-val" title="从 ${it.amort.since} 到今天共 ${dv.days} 天均摊">📉每天¥${dv.val.toFixed(2)}（已用${dv.days}天）</span>`
+                : `<span class="hl-life-amort-val">📉今天起算</span>`;
+            return `<div class="hl-life-item">
+                ${em?`<span class="hl-life-emoji-show">${em}</span>`:''}
+                <span class="hl-life-tag">${escapeHtml(cat)}</span>
+                <span class="hl-life-text">${escapeHtml(it.text)}</span>
+                ${cost?`<span class="hl-life-cost">${cost}</span>`:''}
+                ${amortTag}
+                <button class="hl-life-edit" onclick="hlStartEditLife(${idx})" title="编辑">✎</button>
+                <button class="hl-life-del" onclick="hlDelLifeItem(${idx})" title="删除">✕</button>
+            </div>`;
+        }).join('') : `<div class="hl-life-empty">📭 这一天还没记录～ 在下面添加你做了什么 / 买了什么</div>`;
+        box.innerHTML = `<div class="hl-dailylife-card">
+            <div class="hl-dailylife-title">📝 日常管理 · ${d}</div>
+            <div class="hl-life-list">${items}</div>
+            <div class="hl-life-emoji-row"><span class="hl-life-emoji-hint">选emoji</span>${emojiChips}<span class="hl-life-mgr-btn ${hlLifeMgrOpen?'on':''}" onclick="hlToggleLifeMgr()" title="管理 emoji 与分类">⚙</span></div>
+            <div class="hl-life-cats">${catChips}</div>
+            ${hlLifeMgrOpen ? hlLifeMgrPanel() : ''}
+            <div class="hl-life-add">
+                <input class="hl-life-input" id="hl-life-input" placeholder="如：做了美甲 / 交了水费 / 开封新沐浴露 / 买了新衣服" onkeydown="if(event.key==='Enter')hlAddLifeItem()">
+                <input class="hl-life-cost-in" id="hl-life-cost" type="number" step="0.01" min="0" placeholder="金额¥">
+                <button class="hl-life-add-btn" onclick="hlAddLifeItem()">添加</button>
+            </div>
+        </div>`;
+    }
+    function hlLifeMgrPanel() {
+        const emojis = hlGetLifeEmojis(), cats = hlGetLifeCats();
+        const emojiChips = emojis.map((e,i) => (i===hlMgrEditEmoji)
+            ? `<span class="hl-mgr-chip editing"><input class="hl-mgr-in em" id="hl-mgr-emoji-edit" value="${hlEscapeAttr(e)}" maxlength="8"><b class="ok" onclick="hlMgrSaveEmojiEdit()" title="保存">✓</b><b class="no" onclick="hlMgrCancelEdit()" title="取消">✕</b></span>`
+            : `<span class="hl-mgr-chip"><span class="em" onclick="hlMgrStartEditEmoji(${i})" title="点一下可编辑">${hlEscapeAttr(e)}</span><b class="no" onclick="hlMgrDelEmoji(${i})" title="删除">✕</b></span>`
+        ).join('');
+        const catChips = cats.map((c,i) => (i===hlMgrEditCat)
+            ? `<span class="hl-mgr-chip editing txt"><input class="hl-mgr-in cat" id="hl-mgr-cat-edit" value="${hlEscapeAttr(c)}" maxlength="8" onkeydown="if(event.key==='Enter')hlMgrSaveCatEdit()"><b class="ok" onclick="hlMgrSaveCatEdit()" title="保存">✓</b><b class="no" onclick="hlMgrCancelEdit()" title="取消">✕</b></span>`
+            : `<span class="hl-mgr-chip txt"><span class="em" onclick="hlMgrStartEditCat(${i})" title="点一下可重命名">${escapeHtml(c)}</span><b class="no" onclick="hlMgrDelCat(${i})" title="删除">✕</b></span>`
+        ).join('');
+        return `<div class="hl-life-mgr">
+            <div class="hl-mgr-head"><span>⚙ emoji 管理</span><span class="hl-mgr-tip">点 emoji 改名 · ✕ 删除</span></div>
+            <div class="hl-mgr-grid">${emojiChips}</div>
+            <div class="hl-mgr-add">
+                <input class="hl-mgr-in new" id="hl-mgr-emoji-new" placeholder="输入 / 粘贴 emoji，如 🧸" maxlength="8" onkeydown="if(event.key==='Enter')hlMgrAddEmoji()">
+                <button class="hl-mgr-addbtn" onclick="hlMgrAddEmoji()">＋ 添加</button>
+            </div>
+            <div class="hl-mgr-head"><span>⚙ 分类管理</span><span class="hl-mgr-tip">点名字可重命名 · ✕ 删除</span></div>
+            <div class="hl-mgr-grid">${catChips}</div>
+            <div class="hl-mgr-add">
+                <input class="hl-mgr-in new" id="hl-mgr-cat-new" placeholder="新分类名，如 宠物" maxlength="8" onkeydown="if(event.key==='Enter')hlMgrAddCat()">
+                <button class="hl-mgr-addbtn" onclick="hlMgrAddCat()">＋ 添加</button>
+            </div>
+        </div>`;
+    }
+    function hlToggleLifeMgr() {
+        hlLifeMgrOpen = !hlLifeMgrOpen;
+        hlMgrEditEmoji = -1; hlMgrEditCat = -1;
+        hlRenderCard();
+    }
+    function hlMgrFocus(id) { setTimeout(function(){ const el = document.getElementById(id); if(el) { el.focus(); if(el.select) el.select(); } }, 0); }
+    function hlMgrStartEditEmoji(i) { hlMgrEditEmoji = i; hlMgrEditCat = -1; hlRenderCard(); hlMgrFocus('hl-mgr-emoji-edit'); }
+    function hlMgrStartEditCat(i) { hlMgrEditCat = i; hlMgrEditEmoji = -1; hlRenderCard(); hlMgrFocus('hl-mgr-cat-edit'); }
+    function hlMgrCancelEdit() { hlMgrEditEmoji = -1; hlMgrEditCat = -1; hlRenderCard(); }
+    function hlMgrSaveEmojiEdit() {
+        const el = document.getElementById('hl-mgr-emoji-edit');
+        if(!el || hlMgrEditEmoji < 0) { hlMgrEditEmoji = -1; hlRenderCard(); return; }
+        const v = (el.value || '').trim();
+        const arr = hlGetLifeEmojis();
+        if(v && arr[hlMgrEditEmoji] !== v) {
+            if(arr.indexOf(v) >= 0) { hlMgrEditEmoji = -1; hlRenderCard(); hlToast('这个 emoji 已经有了'); return; }
+            const old = arr[hlMgrEditEmoji];
+            arr[hlMgrEditEmoji] = v;
+            if(data.health.dailyLife) Object.keys(data.health.dailyLife).forEach(function(d){
+                (data.health.dailyLife[d]||[]).forEach(function(it){ if(it && it.emoji === old) it.emoji = v; });
+            });
+            if(hlLifeEmoji === old) hlLifeEmoji = v;
+            if(hlEditLifeEmoji === old) hlEditLifeEmoji = v;
+        }
+        hlMgrEditEmoji = -1;
+        saveData(); hlRenderCard(); hlRenderCal(); hlRenderDailyReview();
+    }
+    function hlMgrSaveCatEdit() {
+        const el = document.getElementById('hl-mgr-cat-edit');
+        if(!el || hlMgrEditCat < 0) { hlMgrEditCat = -1; hlRenderCard(); return; }
+        const v = (el.value || '').trim();
+        const arr = hlGetLifeCats();
+        const old = arr[hlMgrEditCat];
+        if(v && v !== old) {
+            if(arr.indexOf(v) >= 0) { hlMgrEditCat = -1; hlRenderCard(); hlToast('这个分类已经存在了'); return; }
+            arr[hlMgrEditCat] = v;
+            if(data.health.dailyLife) Object.keys(data.health.dailyLife).forEach(function(d){
+                (data.health.dailyLife[d]||[]).forEach(function(it){ if(it && it.cat === old) it.cat = v; });
+            });
+            if(hlLifeCat === old) hlLifeCat = v;
+            if(hlEditLifeCat === old) hlEditLifeCat = v;
+        }
+        hlMgrEditCat = -1;
+        saveData(); hlRenderCard(); hlRenderCal(); hlRenderDailyReview();
+    }
+    function hlMgrAddEmoji() {
+        const el = document.getElementById('hl-mgr-emoji-new');
+        if(!el) return;
+        const v = (el.value || '').trim();
+        if(!v) { el.focus(); return; }
+        const arr = hlGetLifeEmojis();
+        if(arr.indexOf(v) >= 0) { hlToast('这个 emoji 已经有了'); el.value = ''; return; }
+        arr.push(v);
+        el.value = '';
+        saveData(); hlRenderCard(); hlMgrFocus('hl-mgr-emoji-new');
+    }
+    function hlMgrAddCat() {
+        const el = document.getElementById('hl-mgr-cat-new');
+        if(!el) return;
+        const v = (el.value || '').trim();
+        if(!v) { el.focus(); return; }
+        const arr = hlGetLifeCats();
+        if(arr.indexOf(v) >= 0) { hlToast('这个分类已经存在了'); el.value = ''; return; }
+        arr.push(v);
+        el.value = '';
+        saveData(); hlRenderCard(); hlMgrFocus('hl-mgr-cat-new');
+    }
+    function hlMgrDelEmoji(i) {
+        const arr = hlGetLifeEmojis();
+        if(arr.length <= 1) { hlToast('至少保留 1 个 emoji'); return; }
+        const v = arr[i];
+        arr.splice(i,1);
+        if(hlLifeEmoji === v) hlLifeEmoji = arr[0];
+        if(hlEditLifeEmoji === v) hlEditLifeEmoji = arr[0];
+        if(hlMgrEditEmoji === i) hlMgrEditEmoji = -1;
+        saveData(); hlRenderCard();
+    }
+    function hlMgrDelCat(i) {
+        const arr = hlGetLifeCats();
+        if(arr.length <= 1) { hlToast('至少保留 1 个分类'); return; }
+        const v = arr[i];
+        arr.splice(i,1);
+        if(hlLifeCat === v) hlLifeCat = '';
+        if(hlEditLifeCat === v) hlEditLifeCat = '';
+        if(hlMgrEditCat === i) hlMgrEditCat = -1;
+        saveData(); hlRenderCard();
+    }
+    function hlPickLifeEmoji(i) { const a = hlGetLifeEmojis(); if(a[i] !== undefined) { hlLifeEmoji = a[i]; hlRenderCard(); } }
+    function hlPickLifeCat(i) { const a = hlGetLifeCats(); if(a[i] !== undefined) { hlLifeCat = (hlLifeCat === a[i] ? '' : a[i]); hlRenderCard(); } }
+    function hlPickEditEmoji(i) { const a = hlGetLifeEmojis(); if(a[i] !== undefined) { hlEditLifeEmoji = a[i]; hlRenderCard(); } }
+    function hlPickEditCat(i) { const a = hlGetLifeCats(); if(a[i] !== undefined) { hlEditLifeCat = a[i]; hlRenderCard(); } }
+    function hlLifeEditForm(it, idx) {
+        const today = hlRealToday();
+        const ECATS = hlGetLifeCats(), EEMOJIS = hlGetLifeEmojis();
+        const editCats = ECATS.map((c,i) => `<span class="hl-life-cat ${hlEditLifeCat===c?'on':''}" onclick="hlPickEditCat(${i})">${escapeHtml(c)}</span>`).join('');
+        const editEmojis = EEMOJIS.map((e,i) => `<span class="hl-life-emoji ${hlEditLifeEmoji===e?'on':''}" onclick="hlPickEditEmoji(${i})">${hlEscapeAttr(e)}</span>`).join('');
+        const on = it.amort && it.amort.on;
+        const since = on ? (it.amort.since || hlCurDate) : hlCurDate;
+        const dv = hlLifeDailyValue(it, today);
+        const amortInfo = on
+            ? `已开启 · 从 ${since} 到今天共 ${dv?dv.days:'?'} 天` + (dv && dv.val!=null ? ` · 每天 ¥${dv.val.toFixed(2)}` : '')
+            : '未开启 · 开启后按「购买日→今天」每天均摊花费';
+        return `<div class="hl-life-item editing">
+            <div class="hl-life-edit-form">
+                <div class="hl-life-emoji-row">${editEmojis}<span class="hl-life-mgr-btn ${hlLifeMgrOpen?'on':''}" onclick="hlToggleLifeMgr()" title="管理 emoji 与分类">⚙</span></div>
+                <input class="hl-life-edit-input" id="hl-edit-text" value="${escapeHtml(it.text)}" placeholder="内容">
+                <div class="hl-life-cats">${editCats}</div>
+                <input class="hl-life-cost-in" id="hl-edit-cost" type="number" step="0.01" min="0" value="${it.cost||''}" placeholder="金额¥">
+                <button class="hl-life-edit-btn amort ${on?'on':''}" onclick="hlToggleAmort(${idx})">📉 按天算使用价值</button>
+                <div class="hl-life-amort-info">${amortInfo}</div>
+                <div class="hl-life-edit-actions">
+                    <button class="hl-life-edit-btn save" onclick="hlSaveLifeItem(${idx})">保存</button>
+                    <button class="hl-life-edit-btn cancel" onclick="hlCancelEditLife()">取消</button>
+                </div>
+            </div>
+        </div>`;
+    }
+    function hlStartEditLife(idx) {
+        const it = hlGetLifeList(hlCurDate)[idx];
+        if(!it) return;
+        hlEditLifeIdx = idx;
+        hlEditLifeEmoji = hlItemEmoji(it) || '📝';
+        hlEditLifeCat = it.cat || '';
+        hlRenderCard();
+    }
+    function hlCancelEditLife() { hlEditLifeIdx = -1; hlEditLifeEmoji='📝'; hlEditLifeCat=''; hlRenderCard(); }
+    function hlSaveLifeItem(idx) {
+        const list = hlGetLifeList(hlCurDate);
+        const it = list[idx]; if(!it) return;
+        const tInp = document.getElementById('hl-edit-text');
+        const cInp = document.getElementById('hl-edit-cost');
+        const t = tInp ? tInp.value.trim() : '';
+        if(t) it.text = t;
+        it.cat = hlEditLifeCat || it.cat || hlGetLifeCats()[0] || '其他';
+        it.cost = parseFloat(cInp ? cInp.value : '') || 0;
+        it.emoji = hlEditLifeEmoji || null;
+        hlEditLifeIdx = -1; hlEditLifeEmoji='📝'; hlEditLifeCat='';
+        saveData();
+        hlRenderCard(); hlRenderCal(); hlRenderDailyReview();
+    }
+    function hlToggleAmort(idx) {
+        const list = hlGetLifeList(hlCurDate);
+        const it = list[idx]; if(!it) return;
+        if(!it.amort) it.amort = { on:false, since:null };
+        it.amort.on = !it.amort.on;
+        it.amort.since = it.amort.on ? hlCurDate : null;
+        saveData();
+        hlRenderCard(); hlRenderCal(); hlRenderDailyReview();
+    }
+    function hlSetLifeCat(c) {
+        const arr = hlGetLifeCats();
+        const i = arr.indexOf(c);
+        if(i >= 0) hlPickLifeCat(i); else { hlLifeCat = (hlLifeCat===c?'':c); hlRenderCard(); }
+    }
+    function hlAddLifeItem() {
+        const inp = document.getElementById('hl-life-input');
+        const costInp = document.getElementById('hl-life-cost');
+        if(!inp) return;
+        const text = inp.value.trim();
+        if(!text) { inp.focus(); return; }
+        const cost = parseFloat(costInp ? costInp.value : '')||0;
+        const list = hlGetLifeList(hlCurDate);
+        const fallbackCat = hlGetLifeCats()[0] || '其他';
+        list.push({ id: Date.now(), text, cat: hlLifeCat||fallbackCat, cost, emoji: hlLifeEmoji||null, amort: { on:false, since:null } });
+        saveData();
+        inp.value=''; if(costInp) costInp.value=''; hlLifeCat=''; hlLifeEmoji='📝';
+        hlRenderCard(); hlRenderCal(); hlRenderDailyReview();
+    }
+    function hlDelLifeItem(idx) {
+        const list = hlGetLifeList(hlCurDate);
+        list.splice(idx,1);
+        if(list.length===0 && hlEditLifeIdx===idx) hlEditLifeIdx=-1;
+        saveData();
+        hlRenderCard(); hlRenderCal(); hlRenderDailyReview();
+    }
+
     function hlSaveWeight() {
         const m = parseFloat(document.getElementById('hl-w-morning').value);
         const e = parseFloat(document.getElementById('hl-w-evening').value);
@@ -5558,6 +6103,22 @@ window.__KR_AUDIO_BASE__ = 'https://cccciiii411.github.io/kr-workbench/';</scrip
             else if (phase.phase === 'fertile') tips.push({icon:'🌿', text:'卵泡期·精力恢复·适合新训练计划'});
             else if (phase.phase === 'luteal') tips.push({icon:'🍂', text:'黄体期·代谢略升·注意控糖'});
         }
+        const symRec = data.health.symptoms && data.health.symptoms[today];
+        if (symRec && symRec.items && symRec.items.length) {
+            const syms = symRec.items;
+            if (syms.indexOf('水肿') >= 0) tips.push({icon:'💧', text:'出现水肿·少盐、抬腿、补钾镁'});
+            if (syms.indexOf('痛经') >= 0) tips.push({icon:'🩸', text:'痛经·热敷小腹、补镁与Omega-3'});
+            if (syms.indexOf('鼻炎') >= 0) tips.push({icon:'🤧', text:'鼻炎发作·避过敏原、温盐水洗鼻'});
+            if (syms.indexOf('牙龈肿') >= 0) tips.push({icon:'🦷', text:'牙龈肿·加强口腔清洁、补维C'});
+            if (syms.indexOf('头痛') >= 0) tips.push({icon:'🤕', text:'头痛·补水休息、查睡眠与屏幕'});
+            if (syms.indexOf('便秘') >= 0) tips.push({icon:'💩', text:'便秘·增膳食纤维与饮水'});
+            if (syms.indexOf('涨肚') >= 0) tips.push({icon:'🎈', text:'腹胀·避产气食物、饭后散步'});
+            if (syms.indexOf('反酸') >= 0) tips.push({icon:'😣', text:'反酸·睡前3h不进食、垫高枕头'});
+        }
+        const lifeArrToday = data.health.dailyLife && data.health.dailyLife[today];
+        if (lifeArrToday && lifeArrToday.length) {
+            tips.push({icon:'📝', text:'今日日常：'+lifeArrToday.map(x=> ((x.cat && x.cat!=='其他')?(x.cat+' '):'') + x.text).join('、')});
+        }
         if (tips.length === 0) tips.push({icon:'✓', text:'今日各项达标·保持节奏'});
         // 一句话总结
         const kcalStatus = sum.kcal > g.kcal + 50 ? '超标' : (sum.kcal < g.kcal * 0.7 && meals.length > 0) ? '偏低' : '达标';
@@ -5668,6 +6229,16 @@ window.__KR_AUDIO_BASE__ = 'https://cccciiii411.github.io/kr-workbench/';</scrip
         const periodDays = new Set(data.health.periodDays || []);
         return { periodDays, predictedDays: new Set(), ovulationDays: new Set() };
     }
+    /* ========== 日历视图切换（同一框内 身体 / 日常 两张卡片） ========== */
+    let hlCalView = 'body';
+    function hlSwitchCalView(v) { hlCalView = v; hlSyncCalTabs(); hlRenderCal(); }
+    function hlSyncCalTabs() {
+        const tb = document.getElementById('hl-cal-tab-body'), tl = document.getElementById('hl-cal-tab-life');
+        if(!tb || !tl) return;
+        if(hlCalView === 'life') { tb.classList.remove('on'); tl.classList.add('on'); }
+        else { tb.classList.add('on'); tl.classList.remove('on'); }
+    }
+    function hlRenderCal() { if(hlCalView === 'life') hlRenderLifePeriod(); else hlRenderPeriod(); }
     function hlRenderPeriod() {
         hlMigratePeriods();
         const box = document.getElementById('hl-period-area');
@@ -5788,6 +6359,12 @@ window.__KR_AUDIO_BASE__ = 'https://cccciiii411.github.io/kr-workbench/';</scrip
             if(diff < phaseAvgCycle - 5) return 'luteal';
             return 'pms';
         }
+        // 按日期建索引：体重 / 餐饮数
+        const hlCalWMap = {};
+        (data.health.weights||[]).forEach(w => { hlCalWMap[w.date] = w; });
+        const hlCalMMap = {};
+        (data.health.meals||[]).forEach(mm => { hlCalMMap[mm.date] = (hlCalMMap[mm.date]||0)+1; });
+        const hlCalSevColor = { '轻':'#52c41a', '中':'#faad14', '重':'#e74c3c' };
         // 生成周行
         const week = new Date(startDate);
         while(week <= endDate) {
@@ -5809,44 +6386,110 @@ window.__KR_AUDIO_BASE__ = 'https://cccciiii411.github.io/kr-workbench/';</scrip
                 let dayCls = 'phase-empty';
                 if(isPeriod) dayCls = 'period-day';
                 else if(phase) dayCls = 'phase-'+phase;
-                return `<div class="hl-cal-day ${dayCls} ${isToday?'today-day':''} ${!inMonth?'outside-day':''}" onclick="event.stopPropagation();hlTogglePeriodDay('${ds}')" title="${isPeriod?'取消经期记录':'记录为经期'}"><span class="hl-cal-day-text">${d.getDate()}</span></div>`;
-            }).join('');
-            const stripCells = weekDates.map(d => {
-                const ds = hlFmtDate(d);
-                const isPeriod = daySet.has(ds);
-                const phase = phaseOfDateStr(ds);
-                let sCls = 'phase-empty';
-                if(isPeriod) sCls = 'phase-period';
-                else if(phase) sCls = 'phase-'+phase;
-                return `<div class="hl-cal-strip-cell ${sCls}"></div>`;
+                const w = hlCalWMap[ds];
+                let wHtml = '';
+                if(w){
+                    const we = (w.evening!==undefined && w.evening!==null && w.evening!=='') ? w.evening : null;
+                    const wm = (w.morning!==undefined && w.morning!==null && w.morning!=='') ? w.morning : null;
+                    const val = we!=null ? we : wm;
+                    const tag = we!=null ? '晚' : (wm!=null ? '晨' : '');
+                    if(val!=null) wHtml = tag + val;
+                }
+                const symRec = (data.health.symptoms && data.health.symptoms[ds] && data.health.symptoms[ds].items && data.health.symptoms[ds].items.length) ? data.health.symptoms[ds] : null;
+                let symHtml = '';
+                if(symRec){
+                    const items = symRec.items;
+                    const col = hlCalSevColor[symRec.severity] || '#eb2f96';
+                    symHtml = items.slice(0,3).map(() => `<span class="hl-cal-symdot" style="background:${col};"></span>`).join('') + (items.length>3 ? `<span style="font-size:8px;font-weight:800;color:#eb2f96;">+${items.length-3}</span>` : '');
+                }
+                const mealN = hlCalMMap[ds] || 0;
+                const tip = [ds];
+                if(w){ const we=(w.evening!==undefined&&w.evening!==null&&w.evening!=='')?'晚'+w.evening:((w.morning!==undefined&&w.morning!==null&&w.morning!=='')?'晨'+w.morning:''); if(we) tip.push('体重 '+we+'kg'); }
+                if(symRec) tip.push('症状：'+symRec.items.join('/')+(symRec.severity?('('+symRec.severity+')'):''));
+                if(isPeriod) tip.push('经期');
+                const cellTitle = tip.join(' · ');
+                const barColor = isPeriod ? '#b8486a' : (phase ? ({fertile:'#d96f9c',ovulation:'#eebfd6',luteal:'#c39bd0',pms:'#9b82dd'}[phase]||'#e5e5e5') : '#e5e5e5');
+                return `<div class="hl-cal-day ${dayCls} ${isToday?'today-day':''} ${ds===hlCurDate?'selected-day':''} ${!inMonth?'outside-day':''}" onclick="hlSetDate('${ds}')" title="${hlAttr(cellTitle)}">`+
+                    `<span class="hl-cal-bar" style="background:${barColor};"></span>`+
+                    `<span class="hl-cal-pbtn ${isPeriod?'on':''}" onclick="event.stopPropagation();hlTogglePeriodDay('${ds}')" title="${isPeriod?'取消经期':'标记经期'}"></span>`+
+                    `<span class="hl-cal-day-text">${d.getDate()}</span>`+
+                    (wHtml?`<span class="hl-cal-w">${hlAttr(wHtml)}</span>`:'')+
+                    (symHtml?`<span class="hl-cal-sym">${symHtml}</span>`:'')+
+                    (mealN?`<span class="hl-cal-meal">🍽️${mealN}</span>`:'')+
+                    `</div>`;
             }).join('');
             calHtml += `<div class="hl-cal-week ${isTodayWeek ? 'today-week' : ''}">
                 <div class="hl-cal-days">${dayCells}</div>
-                <div class="hl-cal-strip">${stripCells}</div>
             </div>`;
             week.setDate(week.getDate() + 7);
         }
         calHtml += `</div>`;
         calHtml += `<div class="hl-cal-legend">
-            <span><span class="hl-cal-leg-dot" style="background:#e74c3c;"></span>经期</span>
-            <span><span class="hl-cal-leg-dot" style="background:#ffd1d8;"></span>易孕期</span>
-            <span><span class="hl-cal-leg-dot" style="background:#ff8a9b;"></span>排卵日</span>
-            <span><span class="hl-cal-leg-dot" style="background:#e8e0ff;"></span>黄体期</span>
-            <span><span class="hl-cal-leg-dot" style="background:#c4b5ff;"></span>PMS期</span>
+            <span><span class="hl-cal-leg-dot" style="background:#b8486a;"></span>经期</span>
+            <span><span class="hl-cal-leg-dot" style="background:#d96f9c;"></span>易孕期</span>
+            <span><span class="hl-cal-leg-dot" style="background:#eebfd6;"></span>排卵日</span>
+            <span><span class="hl-cal-leg-dot" style="background:#c39bd0;"></span>黄体期</span>
+            <span><span class="hl-cal-leg-dot" style="background:#9b82dd;"></span>PMS期</span>
             <span><span class="hl-cal-leg-dot" style="background:#7b68ee;"></span>今天</span>
+            <span><span class="hl-cal-leg-dot" style="background:#c06a8a;"></span>体重</span>
+            <span><span class="hl-cal-leg-dot" style="background:#52c41a;"></span>症状轻</span>
+            <span><span class="hl-cal-leg-dot" style="background:#faad14;"></span>中</span>
+            <span><span class="hl-cal-leg-dot" style="background:#e74c3c;"></span>重</span>
         </div>`;
-        calHtml += `<div style="font-size:10px;color:#bbb;font-weight:700;margin-top:10px;text-align:center;letter-spacing:0.3px;">👆 点击日期 = 标记/取消经期 · 圆点颜色表示所处阶段</div>`;
+        calHtml += `<div style="font-size:10px;color:#bbb;font-weight:700;margin-top:10px;text-align:center;letter-spacing:0.3px;">👆 点击日期 = 查看当日详情 · 右上角小圆点 = 标记/取消经期 · 格子顶部色条 = 所处阶段</div>`;
         // 历史记录
         const histHtml = episodes.length > 0 ? `<div style="margin-top:10px;font-size:11px;color:#aaa;font-weight:700;line-height:1.8;">记录：${episodes.slice().reverse().map(ep => `${ep[0].slice(5)}${ep.length>1?'→ '+ep[ep.length-1].slice(5):''} (${ep.length}天)`).join('　')}</div>` : '';
-        box.innerHTML = `<div class="hl-period-box">
-            ${statusHtml}
-            ${calHtml}
-            ${histHtml}
+        box.innerHTML = `<div class="hl-period-box hl-body-cal">${statusHtml}${calHtml}${histHtml}</div>`;
+    }
+    /* ========== 日常日历（只显示日常记录 📝） ========== */
+    function hlRenderLifePeriod() {
+        const box = document.getElementById('hl-period-area');
+        if(!box) return;
+        const today = hlRealToday();
+        const y = hlPeriodMonth.getFullYear(), m = hlPeriodMonth.getMonth();
+        const firstDay = new Date(y, m, 1);
+        const monthName = `${y}年${m+1}月`;
+        let calHtml = `<div class="hl-cal-nav"><button class="hl-cal-arrow" onclick="hlShiftPeriodMonth(-1)">‹</button><span class="hl-cal-title">${monthName}</span><button class="hl-cal-arrow" onclick="hlShiftPeriodMonth(1)">›</button></div>`;
+        calHtml += `<div class="hl-cal-dow-row">${['日','一','二','三','四','五','六'].map(d=>`<div class="hl-cal-dow-item">${d}</div>`).join('')}</div>`;
+        const startD = new Date(firstDay); startD.setDate(startD.getDate() - firstDay.getDay());
+        const lastDate = new Date(y, m+1, 0);
+        const endD = new Date(lastDate); endD.setDate(endD.getDate() + (6 - lastDate.getDay()));
+        const week = new Date(startD);
+        while(week <= endD) {
+            const weekDates = [];
+            for(let i=0;i<7;i++){ const d=new Date(week); d.setDate(week.getDate()+i); weekDates.push(d); }
+            const isTodayWeek = weekDates.some(d=>hlFmtDate(d)===today);
+            const dayCells = weekDates.map(d=>{
+                const ds = hlFmtDate(d);
+                const inMonth = d.getMonth()===m;
+                const isToday = ds===today;
+                const lifeArr = (data.health.dailyLife && data.health.dailyLife[ds]) ? data.health.dailyLife[ds] : null;
+                const lifeN = lifeArr ? lifeArr.length : 0;
+                let tip = [ds];
+                if(lifeN) tip.push('日常：'+lifeArr.map(x=>(x.cat?x.cat+'·':'')+x.text+(x.cost>0?(' ¥'+x.cost):'')).join(' / '));
+                const cellTitle = tip.join(' · ');
+                const hasLife = lifeN>0;
+                const dayCls = hasLife ? 'has-life' : '';
+                return `<div class="hl-cal-day ${dayCls} ${isToday?'today-day':''} ${ds===hlCurDate?'selected-day':''} ${!inMonth?'outside-day':''}" onclick="hlSetDate('${ds}')" title="${hlAttr(cellTitle)}">`+
+                    `<span class="hl-cal-bar"></span>`+
+                    `<span class="hl-cal-day-text">${d.getDate()}</span>`+
+                    (lifeN?`<span class="hl-cal-life">${hlLifeCalMark(lifeArr, lifeN)}</span>`:'')+
+                    `</div>`;
+            }).join('');
+            calHtml += `<div class="hl-cal-week ${isTodayWeek?'today-week':''}"><div class="hl-cal-days">${dayCells}</div></div>`;
+            week.setDate(week.getDate()+7);
+        }
+        calHtml += `<div class="hl-cal-legend">
+            <span><span class="hl-cal-leg-dot" style="background:#c9d2f7;"></span>有记录</span>
+            <span><span class="hl-cal-leg-dot" style="background:#7b68ee;"></span>今天</span>
+            <span><span class="hl-cal-leg-dot" style="background:#5b6fd6;"></span>日常（显示所选 emoji）</span>
         </div>`;
+        calHtml += `<div style="font-size:10px;color:#bbb;font-weight:700;margin-top:10px;text-align:center;letter-spacing:0.3px;">👆 点击日期 = 查看当日详情 · 格子里的 emoji = 当天买/做的事（同 emoji 多件则显示数量）</div>`;
+        box.innerHTML = `<div class="hl-period-box hl-life-cal">${calHtml}</div>`;
     }
     function hlShiftPeriodMonth(delta) {
         hlPeriodMonth.setMonth(hlPeriodMonth.getMonth()+delta);
-        hlRenderPeriod();
+        hlRenderCal();
     }
     function hlTogglePeriodDay(ds) {
         if(!data.health.periodDays) data.health.periodDays = [];
@@ -5857,7 +6500,7 @@ window.__KR_AUDIO_BASE__ = 'https://cccciiii411.github.io/kr-workbench/';</scrip
         }
         else data.health.periodDays.push(ds);
         data.health.periodDays.sort();
-        saveData(); hlRenderPeriod();
+        saveData(); hlRenderCal();
     }
     /* ========== 营养补剂（网格视图 · 打卡即确认） ========== */
     function hlRenderSupp() {
@@ -6277,6 +6920,69 @@ window.__KR_AUDIO_BASE__ = 'https://cccciiii411.github.io/kr-workbench/';</scrip
         URL.revokeObjectURL(url);
     }
 
+    /* ================= 板块拖拽排序（身体管理专属） ================= */
+    function hlSecList(card){
+        return Array.prototype.filter.call(card.children, function(el){
+            return el.classList && el.classList.contains('hl-dragsec');
+        });
+    }
+    function hlSaveSecOrder(){
+        const card = document.getElementById('hl-body-card');
+        if(!card) return;
+        try{ localStorage.setItem('HL_SEC_ORDER', JSON.stringify(hlSecList(card).map(function(s){ return s.dataset.sec; }))); }catch(e){}
+    }
+    function hlInitDragSections(){
+        const card = document.getElementById('hl-body-card');
+        if(!card) return;
+        let secs = hlSecList(card);
+        if(!secs.length) return;
+        // 恢复上次保存的顺序
+        try{
+            const saved = JSON.parse(localStorage.getItem('HL_SEC_ORDER') || '[]');
+            if(Array.isArray(saved) && saved.length){
+                const map = {}; secs.forEach(function(s){ map[s.dataset.sec] = s; });
+                const used = {};
+                saved.forEach(function(k){ if(map[k]){ card.appendChild(map[k]); used[k] = 1; } });
+                secs.forEach(function(s){ if(!used[s.dataset.sec]) card.appendChild(s); });
+            }
+        }catch(e){}
+        // 注入拖拽手柄 + 绑定拖动（仅一次）
+        hlSecList(card).forEach(function(sec){
+            const hasHandle = Array.prototype.some.call(sec.children, function(c){ return c.classList && c.classList.contains('hl-drag-handle'); });
+            if(hasHandle) return;
+            const h = document.createElement('span');
+            h.className = 'hl-drag-handle';
+            h.textContent = '⠿ 拖动';
+            h.title = '按住拖动，调整板块顺序';
+            sec.insertBefore(h, sec.firstChild);
+            h.addEventListener('pointerdown', function(e){
+                e.preventDefault();
+                e.stopPropagation();
+                sec.classList.add('hl-dragging');
+                const onMove = function(ev){
+                    const y = ev.clientY;
+                    const sibs = hlSecList(card).filter(function(s){ return s !== sec; });
+                    let placed = false;
+                    for(let i=0;i<sibs.length;i++){
+                        const r = sibs[i].getBoundingClientRect();
+                        if(y < r.top + r.height/2){ card.insertBefore(sec, sibs[i]); placed = true; break; }
+                    }
+                    if(!placed) card.appendChild(sec);
+                };
+                const onUp = function(){
+                    document.removeEventListener('pointermove', onMove);
+                    document.removeEventListener('pointerup', onUp);
+                    document.removeEventListener('pointercancel', onUp);
+                    sec.classList.remove('hl-dragging');
+                    hlSaveSecOrder();
+                };
+                document.addEventListener('pointermove', onMove);
+                document.addEventListener('pointerup', onUp);
+                document.addEventListener('pointercancel', onUp);
+            });
+        });
+    }
+
     /* ================= 初始化 ================= */
     loadData();
     hlCloudPull();   // 启动时拉云端并集合并（异步，不阻塞渲染；完成后自修复云端）
@@ -6298,6 +7004,7 @@ window.__KR_AUDIO_BASE__ = 'https://cccciiii411.github.io/kr-workbench/';</scrip
     renderDailyMemos();
     renderKrLearn();
     renderHealth();
+    hlInitDragSections();
     updateBadges();
     renderOverview();
 
