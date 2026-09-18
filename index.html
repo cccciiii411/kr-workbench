@@ -1424,6 +1424,17 @@
         #view-daily-health .hl-mgr-add { display: flex; gap: 6px; align-items: center; }
         #view-daily-health .hl-mgr-addbtn { padding: 6px 11px; background: linear-gradient(135deg,#7b68ee,#9b82dd); color: #fff; border: none; border-radius: 8px; font-size: 11.5px; font-weight: 800; cursor: pointer; white-space: nowrap; flex-shrink: 0; }
         #view-daily-health .hl-mgr-addbtn:active { transform: scale(0.96); }
+        #view-daily-health .hl-value-list { margin-top: 14px; background: linear-gradient(135deg, rgba(29,158,117,0.06), rgba(123,104,238,0.05)); border: 1.5px solid rgba(123,104,238,0.18); border-radius: 13px; padding: 11px 12px; }
+        #view-daily-health .hl-value-list.empty { font-size: 11px; color: #aaa; text-align: center; padding: 16px 8px; background: rgba(0,0,0,0.02); border-style: dashed; }
+        #view-daily-health .hl-value-head { font-size: 12px; font-weight: 800; color: #5b6fd6; margin-bottom: 8px; }
+        #view-daily-health .hl-value-head b { color: #1d9e75; }
+        #view-daily-health .hl-value-row { display: flex; align-items: center; gap: 7px; padding: 5px 0; border-top: 1px dashed rgba(123,104,238,0.15); font-size: 11.5px; }
+        #view-daily-health .hl-value-row:first-of-type { border-top: none; }
+        #view-daily-health .hl-value-emoji { font-size: 14px; flex-shrink: 0; }
+        #view-daily-health .hl-value-text { flex: 1; color: #444; word-break: break-all; min-width: 0; }
+        #view-daily-health .hl-value-cat { font-size: 10px; font-weight: 700; color: #7b68ee; background: rgba(123,104,238,0.1); padding: 1px 7px; border-radius: 7px; flex-shrink: 0; }
+        #view-daily-health .hl-value-days { font-size: 10px; color: #999; flex-shrink: 0; }
+        #view-daily-health .hl-value-amt { font-size: 11px; font-weight: 800; color: #1d9e75; flex-shrink: 0; }
         #view-daily-health .hl-life-emoji-show { font-size: 15px; flex-shrink: 0; }
         #view-daily-health .hl-life-item.editing { flex-wrap: wrap; background: rgba(123,104,238,0.05); border-color: rgba(123,104,238,0.25); }
         #view-daily-health .hl-life-edit-form { width: 100%; display: flex; flex-direction: column; gap: 8px; }
@@ -4985,6 +4996,42 @@ window.__KR_AUDIO_BASE__ = 'https://cccciiii411.github.io/kr-workbench/';</scrip
                 <input class="hl-life-cost-in" id="hl-life-cost" type="number" step="0.01" min="0" placeholder="金额¥">
                 <button class="hl-life-add-btn" onclick="hlAddLifeItem()">添加</button>
             </div>
+            ${hlRenderValueList()}
+        </div>`;
+    }
+    function hlRenderValueList() {
+        if(!data.health || !data.health.dailyLife) return '';
+        const today = hlRealToday();
+        const rows = [];
+        Object.keys(data.health.dailyLife).forEach(function(d){
+            (data.health.dailyLife[d]||[]).forEach(function(it){
+                if(it && it.amort && it.amort.on) rows.push({ date:d, it:it });
+            });
+        });
+        if(!rows.length) return `<div class="hl-value-list empty">📉 还没有开启「按天算使用价值」的条目 —— 在记录上点 ✎ 即可开启摊销</div>`;
+        rows.sort(function(a,b){ return (a.it.amort.since||a.date).localeCompare(b.it.amort.since||b.date); });
+        let total = 0;
+        const items = rows.map(function(r){
+            const it = r.it;
+            const since = it.amort.since || r.date;
+            const days = hlDaysBetween(since, today);
+            const cost = parseFloat(it.cost)||0;
+            const dv = days>0 ? cost/days : null;
+            if(dv!=null) total += dv;
+            const em = hlItemEmoji(it);
+            const cat = it.cat || '其他';
+            const daysLabel = days>0 ? (days+' 天') : (days===0 ? '今天起' : '—');
+            return `<div class="hl-value-row">
+                ${em?`<span class="hl-value-emoji">${em}</span>`:''}
+                <span class="hl-value-text">${escapeHtml(it.text)}</span>
+                <span class="hl-value-cat">${escapeHtml(cat)}</span>
+                <span class="hl-value-days">${daysLabel}</span>
+                <span class="hl-value-amt">${dv!=null?('¥'+dv.toFixed(2)+' /天'):'今天起算'}</span>
+            </div>`;
+        }).join('');
+        return `<div class="hl-value-list">
+            <div class="hl-value-head">📉 价值清单 · 正在按天算的 ${rows.length} 件 · 每天合计 <b>¥${total.toFixed(2)}</b></div>
+            ${items}
         </div>`;
     }
     function hlLifeMgrPanel() {
