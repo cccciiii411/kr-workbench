@@ -1430,6 +1430,7 @@
         #view-daily-health .hl-value-head b { color: #1d9e75; }
         #view-daily-health .hl-value-row { display: flex; align-items: center; gap: 7px; padding: 5px 0; border-top: 1px dashed rgba(123,104,238,0.15); font-size: 11.5px; }
         #view-daily-health .hl-value-row:first-of-type { border-top: none; }
+        #view-daily-health .hl-value-date { font-size: 10px; font-weight: 800; color: #5b6fd6; background: rgba(91,111,214,0.1); padding: 1px 6px; border-radius: 7px; flex-shrink: 0; letter-spacing: 0.3px; }
         #view-daily-health .hl-value-emoji { font-size: 14px; flex-shrink: 0; }
         #view-daily-health .hl-value-text { flex: 1; color: #444; word-break: break-all; min-width: 0; }
         #view-daily-health .hl-value-cat { font-size: 10px; font-weight: 700; color: #7b68ee; background: rgba(123,104,238,0.1); padding: 1px 7px; border-radius: 7px; flex-shrink: 0; }
@@ -2235,6 +2236,40 @@ window.__KR_AUDIO_BASE__ = 'https://cccciiii411.github.io/kr-workbench/';</scrip
     </main>
 
 <script>
+    /* ================= 安全存储层 =================
+       跨域 iframe / 隐私模式下访问 localStorage 可能直接抛异常，
+       一旦裸奔就会让整块脚本挂掉（表现为「打开了但一片空白」）。
+       这里统一走 __hlLS：可用就用原生，不可用就退化为内存副本，保证页面照常渲染。 */
+    window.__hlLS = (function(){
+        var L = null;
+        try { L = window['localStorage']; } catch(e) { L = null; }
+        if (L) { try { L.setItem('__hl_probe','1'); L.removeItem('__hl_probe'); } catch(e) { L = null; } }
+        if (L) return L;
+        window.__HL_LS_FALLBACK = true;
+        var mem = {};
+        var shim = {
+            getItem: function(k){ return Object.prototype.hasOwnProperty.call(mem, k) ? mem[k] : null; },
+            setItem: function(k, v){ mem[k] = String(v); },
+            removeItem: function(k){ delete mem[k]; },
+            clear: function(){ mem = {}; },
+            key: function(i){ var ks = Object.keys(mem); return i < ks.length ? ks[i] : null; }
+        };
+        Object.defineProperty(shim, 'length', { get: function(){ return Object.keys(mem).length; } });
+        return shim;
+    })();
+    /* 存储不可用时给用户一个明确提示（数据仍会云端同步，只是本机不留缓存） */
+    window.addEventListener('DOMContentLoaded', function(){
+        if (!window.__HL_LS_FALLBACK && !window.__HL_IDB_FALLBACK) return;
+        try {
+            if (document.getElementById('hl-store-warn')) return;
+            var b = document.createElement('div');
+            b.id = 'hl-store-warn';
+            b.style.cssText = 'position:fixed;left:0;right:0;bottom:0;z-index:99999;background:#fff8e6;color:#8a6b2b;font-size:12px;line-height:1.5;padding:7px 14px;text-align:center;border-top:1px solid #f0dfae;';
+            b.textContent = '⚠ 当前环境禁止本地存储（常见于内嵌预览）：改动会靠云端同步保存；想要完整体验请在浏览器中直接打开。';
+            document.body.appendChild(b);
+        } catch(e) {}
+    });
+
     /* ================= 数据层 ================= */
     const STORAGE_KEY = 'Workbench_V1';
     // 内嵌完整兜底数据（生理期/补剂/饮食/体重等），仅用于本地自愈恢复，确保打开即完整。无任何云端逻辑。
@@ -2264,7 +2299,7 @@ window.__KR_AUDIO_BASE__ = 'https://cccciiii411.github.io/kr-workbench/';</scrip
     let selectedCalDate = null;
 
     function loadData() {
-        const hasStored = localStorage.getItem(STORAGE_KEY);
+        const hasStored = __hlLS.getItem(STORAGE_KEY);
         try {
             if (hasStored) {
                 const parsed = JSON.parse(hasStored);
@@ -2615,7 +2650,7 @@ window.__KR_AUDIO_BASE__ = 'https://cccciiii411.github.io/kr-workbench/';</scrip
     }
 
     /* ========== 云端同步层（叠加，不改上面任何逻辑；并集合并，只补不删）========== */
-    let   HL_API_TOKEN = localStorage.getItem('HL_API_TOKEN') || '2de796c607136c835b30e0c05052ce05e311f899ade72c79';   // 默认填入项目同步令牌；本地若存过别的 token 仍以本地为准
+    let   HL_API_TOKEN = __hlLS.getItem('HL_API_TOKEN') || '2de796c607136c835b30e0c05052ce05e311f899ade72c79';   // 默认填入项目同步令牌；本地若存过别的 token 仍以本地为准
     const HL_API_URL   = 'https://health-workbench-production.up.railway.app';
     const HL_SYNC      = true;
     let   HL_SYNC_READY = false;
@@ -2669,7 +2704,7 @@ window.__KR_AUDIO_BASE__ = 'https://cccciiii411.github.io/kr-workbench/';</scrip
         if (!inp) return;
         const v = (inp.value || '').trim();
         if (!v) return;
-        localStorage.setItem('HL_API_TOKEN', v);
+        __hlLS.setItem('HL_API_TOKEN', v);
         HL_API_TOKEN = v;
         const b = document.getElementById('hl-token-box');
         if (b) b.style.display = 'none';
@@ -2913,9 +2948,9 @@ window.__KR_AUDIO_BASE__ = 'https://cccciiii411.github.io/kr-workbench/';</scrip
         );
 
         // 标记 pending 文件已处理，避免轮询重复写入
-        localStorage.setItem('hl-supp-processed', JSON.stringify(['mg-20260727-v2','multivit-20260727','probiotic-20260727','perilla-20260727','fishoil-20260728-v2']));
-        localStorage.setItem('hl-meal-processed', JSON.stringify(['meal-20260728-lunch','meal-20260728-snack-matcha','meal-20260729-01']));
-        localStorage.setItem('hl-goal-processed', JSON.stringify(['goal-20260727-01']));
+        __hlLS.setItem('hl-supp-processed', JSON.stringify(['mg-20260727-v2','multivit-20260727','probiotic-20260727','perilla-20260727','fishoil-20260728-v2']));
+        __hlLS.setItem('hl-meal-processed', JSON.stringify(['meal-20260728-lunch','meal-20260728-snack-matcha','meal-20260729-01']));
+        __hlLS.setItem('hl-goal-processed', JSON.stringify(['goal-20260727-01']));
 
         saveData();
     }
@@ -2950,7 +2985,7 @@ window.__KR_AUDIO_BASE__ = 'https://cccciiii411.github.io/kr-workbench/';</scrip
     }
 
     function saveData() {
-        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch(e) { console.warn('Save failed', e); }
+        try { __hlLS.setItem(STORAGE_KEY, JSON.stringify(data)); } catch(e) { console.warn('Save failed', e); }
         hlCloudPush();
     }
 
@@ -5022,6 +5057,7 @@ window.__KR_AUDIO_BASE__ = 'https://cccciiii411.github.io/kr-workbench/';</scrip
             const cat = it.cat || '其他';
             const daysLabel = days>0 ? (days+' 天') : (days===0 ? '今天起' : '—');
             return `<div class="hl-value-row">
+                <span class="hl-value-date">${String(r.date).slice(5)}</span>
                 ${em?`<span class="hl-value-emoji">${em}</span>`:''}
                 <span class="hl-value-text">${escapeHtml(it.text)}</span>
                 <span class="hl-value-cat">${escapeHtml(cat)}</span>
@@ -6278,7 +6314,15 @@ window.__KR_AUDIO_BASE__ = 'https://cccciiii411.github.io/kr-workbench/';</scrip
     }
     /* ========== 日历视图切换（同一框内 身体 / 日常 两张卡片） ========== */
     let hlCalView = 'body';
-    function hlSwitchCalView(v) { hlCalView = v; hlSyncCalTabs(); hlRenderCal(); }
+    function hlSwitchCalView(v) {
+        hlCalView = v;
+        hlSyncCalTabs();
+        hlRenderCal();
+        // 同步下方「今日记录」：身体(日历)↔身体状况(记录) / 日常(日历)↔日常管理(记录)
+        hlCardView = (v === 'life') ? 'life' : 'symp';
+        hlSyncCardTabs();
+        hlRenderCard();
+    }
     function hlSyncCalTabs() {
         const tb = document.getElementById('hl-cal-tab-body'), tl = document.getElementById('hl-cal-tab-life');
         if(!tb || !tl) return;
@@ -6976,7 +7020,7 @@ window.__KR_AUDIO_BASE__ = 'https://cccciiii411.github.io/kr-workbench/';</scrip
     function hlSaveSecOrder(){
         const card = document.getElementById('hl-body-card');
         if(!card) return;
-        try{ localStorage.setItem('HL_SEC_ORDER', JSON.stringify(hlSecList(card).map(function(s){ return s.dataset.sec; }))); }catch(e){}
+        try{ __hlLS.setItem('HL_SEC_ORDER', JSON.stringify(hlSecList(card).map(function(s){ return s.dataset.sec; }))); }catch(e){}
     }
     function hlInitDragSections(){
         const card = document.getElementById('hl-body-card');
@@ -6985,7 +7029,7 @@ window.__KR_AUDIO_BASE__ = 'https://cccciiii411.github.io/kr-workbench/';</scrip
         if(!secs.length) return;
         // 恢复上次保存的顺序
         try{
-            const saved = JSON.parse(localStorage.getItem('HL_SEC_ORDER') || '[]');
+            const saved = JSON.parse(__hlLS.getItem('HL_SEC_ORDER') || '[]');
             if(Array.isArray(saved) && saved.length){
                 const map = {}; secs.forEach(function(s){ map[s.dataset.sec] = s; });
                 const used = {};
@@ -7071,7 +7115,7 @@ window.__KR_AUDIO_BASE__ = 'https://cccciiii411.github.io/kr-workbench/';</scrip
                 else if(payload.id && payload.name) items = [payload];
                 if(items.length === 0) return;
                 let processed = [];
-                try { processed = JSON.parse(localStorage.getItem('hl-supp-processed') || '[]'); } catch(e){}
+                try { processed = JSON.parse(__hlLS.getItem('hl-supp-processed') || '[]'); } catch(e){}
                 let newCount = 0;
                 items.forEach(it => {
                     if(!it.id || !it.name) return;
@@ -7084,7 +7128,7 @@ window.__KR_AUDIO_BASE__ = 'https://cccciiii411.github.io/kr-workbench/';</scrip
                 });
                 if(newCount > 0) {
                     if(processed.length > 100) processed = processed.slice(-100);
-                    localStorage.setItem('hl-supp-processed', JSON.stringify(processed));
+                    __hlLS.setItem('hl-supp-processed', JSON.stringify(processed));
                     hlRenderSupp();
                 }
             } catch(e) {}
@@ -7129,12 +7173,12 @@ window.__KR_AUDIO_BASE__ = 'https://cccciiii411.github.io/kr-workbench/';</scrip
                 const payload = await r.json();
                 if(!payload || !payload.id || !payload.items) return;
                 let processed = [];
-                try { processed = JSON.parse(localStorage.getItem('hl-meal-processed') || '[]'); } catch(e){}
+                try { processed = JSON.parse(__hlLS.getItem('hl-meal-processed') || '[]'); } catch(e){}
                 if(processed.includes(payload.id)) return;
                 if(window.hlAiIngestMeal) hlAiIngestMeal(payload);
                 processed.push(payload.id);
                 if(processed.length > 50) processed = processed.slice(-50);
-                localStorage.setItem('hl-meal-processed', JSON.stringify(processed));
+                __hlLS.setItem('hl-meal-processed', JSON.stringify(processed));
             } catch(e) {}
         }, 2000);
     })();
@@ -7150,7 +7194,7 @@ window.__KR_AUDIO_BASE__ = 'https://cccciiii411.github.io/kr-workbench/';</scrip
                 const payload = await r.json();
                 if(!payload || !payload.id) return;
                 let processed = [];
-                try { processed = JSON.parse(localStorage.getItem('hl-goal-processed') || '[]'); } catch(e){}
+                try { processed = JSON.parse(__hlLS.getItem('hl-goal-processed') || '[]'); } catch(e){}
                 if(processed.includes(payload.id)) return;
                 if(payload.goal) {
                     data.health.goal = Object.assign(data.health.goal || {}, payload.goal);
@@ -7169,7 +7213,7 @@ window.__KR_AUDIO_BASE__ = 'https://cccciiii411.github.io/kr-workbench/';</scrip
                     hlSuppToast('✓ 已更新减脂营养目标', true);
                 }
                 processed.push(payload.id);
-                localStorage.setItem('hl-goal-processed', JSON.stringify(processed));
+                __hlLS.setItem('hl-goal-processed', JSON.stringify(processed));
             } catch(e) {}
         }, 2000);
     })();
@@ -7209,7 +7253,14 @@ window.__KR_AUDIO_BASE__ = 'https://cccciiii411.github.io/kr-workbench/';</scrip
     let flights = [], store = { plan: [], ticket: [], wish: [], fin: [], checklist: [], chkCats: ['行李🧳', '购物🛍️', '办事📌'], wishCats: ['Olive Young', 'Musinsa', '药局', '其他'], dailyWish: [], dailyWishCats: ['Olive Young', 'Musinsa', '药局', '其他'], memos: [], quickNote: '', customDays: [], removedDays: [] };
     let curView = 'home', curIdx = -1, curDate = '04.29', RATE = 191.0, modalCallback = null, tempImg = '', dTz='上海', aTz='首尔', sTz='首尔', curCat='全部', activeChkCat='全部';
 
-    const dbPromise = new Promise(resolve => { const req = indexedDB.open(DB_NAME, 1); req.onupgradeneeded = e => e.target.result.createObjectStore(SM_STORE_NAME); req.onsuccess = () => resolve(req.result); req.onerror = () => resolve(null); });
+    const dbPromise = new Promise(resolve => {
+        try {
+            const req = indexedDB.open(DB_NAME, 1);
+            req.onupgradeneeded = e => e.target.result.createObjectStore(SM_STORE_NAME);
+            req.onsuccess = () => resolve(req.result);
+            req.onerror = () => resolve(null);
+        } catch(e) { window.__HL_IDB_FALLBACK = true; resolve(null); }
+    });
 
     async function bootApp() {
         try {
